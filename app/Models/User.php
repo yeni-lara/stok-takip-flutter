@@ -66,7 +66,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Belirli bir izni kontrol et
+     * Kullanıcının belirli bir yetkiye sahip olup olmadığını kontrol eder
      */
     public function hasPermission($permission)
     {
@@ -75,7 +75,9 @@ class User extends Authenticatable
         }
 
         $permissions = $this->role->permissions;
-        return isset($permissions[$permission]) && $permissions[$permission] === true;
+        
+        // Permissions artık array olarak saklanıyor, sadece varlığını kontrol et
+        return is_array($permissions) && in_array($permission, $permissions);
     }
 
     /**

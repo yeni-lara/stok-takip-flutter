@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use App\Models\User; // Added this import for User model
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,70 +22,80 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerPolicies();
-
-        // Kullanıcı yönetimi yetkisi
-        Gate::define('manage-users', function ($user) {
+        // Kullanıcı yönetimi
+        Gate::define('manage-users', function (User $user) {
             return $user->hasPermission('user_management');
         });
 
-        // Ürün yönetimi yetkisi
-        Gate::define('manage-products', function ($user) {
+        // Rol yönetimi
+        Gate::define('manage-roles', function (User $user) {
+            return $user->hasPermission('role_management');
+        });
+
+        // Ürün yönetimi
+        Gate::define('manage-products', function (User $user) {
             return $user->hasPermission('product_management');
         });
 
-        // Kategori yönetimi yetkisi
-        Gate::define('manage-categories', function ($user) {
+        // Kategori yönetimi
+        Gate::define('manage-categories', function (User $user) {
             return $user->hasPermission('category_management');
         });
 
-        // Tedarikçi yönetimi yetkisi
-        Gate::define('manage-suppliers', function ($user) {
+        // Tedarikçi yönetimi
+        Gate::define('manage-suppliers', function (User $user) {
             return $user->hasPermission('supplier_management');
         });
 
-        // Stok girişi yetkisi
-        Gate::define('stock-entry', function ($user) {
+        // Müşteri yönetimi
+        Gate::define('manage-customers', function (User $user) {
+            return $user->hasPermission('customer_management');
+        });
+
+        // Stok işlemleri
+        Gate::define('stock-entry', function (User $user) {
             return $user->hasPermission('stock_entry');
         });
 
-        // Stok çıkışı yetkisi
-        Gate::define('stock-exit', function ($user) {
+        Gate::define('stock-exit', function (User $user) {
             return $user->hasPermission('stock_exit');
         });
 
-        // Stok iadesi yetkisi
-        Gate::define('stock-return', function ($user) {
+        Gate::define('stock-return', function (User $user) {
             return $user->hasPermission('stock_return');
         });
 
-        // Stok sayımı yetkisi
-        Gate::define('stock-count', function ($user) {
+        Gate::define('stock-count', function (User $user) {
             return $user->hasPermission('stock_count');
         });
 
-        // Raporları görüntüleme yetkisi
-        Gate::define('view-reports', function ($user) {
-            return $user->hasPermission('reports_view');
+        // Stok hareket yönetimi
+        Gate::define('manage-stock-movements', function (User $user) {
+            return $user->hasPermission('stock_movement_management');
         });
 
-        // Rapor export yetkisi
-        Gate::define('export-reports', function ($user) {
-            return $user->hasPermission('reports_export');
+        // Rapor görüntüleme
+        Gate::define('view-reports', function (User $user) {
+            return $user->hasPermission('view_reports');
         });
 
-        // Sistem ayarları yetkisi
-        Gate::define('manage-settings', function ($user) {
-            return $user->hasPermission('system_settings');
+        // Rapor dışa aktarma
+        Gate::define('export-reports', function (User $user) {
+            return $user->hasPermission('export_reports');
         });
 
-        // Admin kontrolü
-        Gate::define('admin', function ($user) {
-            return $user->isAdmin();
+        // Sistem ayarları
+        Gate::define('manage-settings', function (User $user) {
+            return $user->hasPermission('settings_management');
         });
 
-        // Aktif kullanıcı kontrolü
-        Gate::define('active-user', function ($user) {
+        // Admin yetkisi
+        Gate::define('admin', function (User $user) {
+            return $user->hasPermission('admin');
+        });
+
+        // Aktif kullanıcı
+        Gate::define('active-user', function (User $user) {
             return $user->isActive();
         });
     }

@@ -13,7 +13,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Gate::allows('user_management')) {
+        if (!Gate::allows('manage-customers')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
@@ -69,7 +69,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        if (!Gate::allows('user_management')) {
+        if (!Gate::allows('manage-customers')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
@@ -81,7 +81,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Gate::allows('user_management')) {
+        if (!Gate::allows('manage-customers')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
@@ -118,7 +118,7 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        if (!Gate::allows('user_management')) {
+        if (!Gate::allows('manage-customers')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
@@ -137,7 +137,7 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        if (!Gate::allows('user_management')) {
+        if (!Gate::allows('manage-customers')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
@@ -149,7 +149,7 @@ class CustomerController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
-        if (!Gate::allows('user_management')) {
+        if (!Gate::allows('manage-customers')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
@@ -186,7 +186,7 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
-        if (!Gate::allows('user_management')) {
+        if (!Gate::allows('manage-customers')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 

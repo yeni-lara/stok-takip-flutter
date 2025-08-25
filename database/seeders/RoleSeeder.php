@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\Role; // Added this import for Role model
 
 class RoleSeeder extends Seeder
 {
@@ -16,69 +17,65 @@ class RoleSeeder extends Seeder
         $roles = [
             [
                 'name' => 'admin',
-                'display_name' => 'Admin (Genel Müdür)',
-                'description' => 'Tüm yetkilere sahip genel müdür',
-                'permissions' => json_encode([
-                    'user_management' => true,
-                    'product_management' => true,
-                    'category_management' => true,
-                    'supplier_management' => true,
-                    'stock_entry' => true,
-                    'stock_exit' => true,
-                    'stock_return' => true,
-                    'stock_count' => true,
-                    'reports_view' => true,
-                    'reports_export' => true,
-                    'system_settings' => true
-                ]),
+                'display_name' => 'Yönetici',
+                'description' => 'Tüm yetkilere sahip sistem yöneticisi',
+                'permissions' => [
+                    'user_management',
+                    'role_management',
+                    'product_management',
+                    'category_management',
+                    'supplier_management',
+                    'customer_management',
+                    'stock_entry',
+                    'stock_exit',
+                    'stock_return',
+                    'stock_count',
+                    'stock_movement_management',
+                    'view_reports',
+                    'export_reports',
+                    'settings_management',
+                    'admin'
+                ],
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now()
             ],
             [
                 'name' => 'yardımcı',
-                'display_name' => 'Yardımcı (Yardımcı Müdür)',
+                'display_name' => 'Yardımcı Müdür',
                 'description' => 'Sınırlı yetkilere sahip yardımcı müdür',
-                'permissions' => json_encode([
-                    'user_management' => false,
-                    'product_management' => true,
-                    'category_management' => true,
-                    'supplier_management' => true,
-                    'stock_entry' => true,
-                    'stock_exit' => true,
-                    'stock_return' => true,
-                    'stock_count' => true,
-                    'reports_view' => true,
-                    'reports_export' => false,
-                    'system_settings' => false
-                ]),
+                'permissions' => [
+                    'product_management',
+                    'category_management',
+                    'supplier_management',
+                    'customer_management',
+                    'stock_entry',
+                    'stock_exit',
+                    'stock_return',
+                    'stock_count',
+                    'view_reports'
+                ],
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now()
             ],
             [
                 'name' => 'teslimat_elemanı',
-                'display_name' => 'Teslimat Elemanı (Şoför)',
-                'description' => 'Sadece stok çıkış ve iade yetkisi olan teslimat elemanı',
-                'permissions' => json_encode([
-                    'user_management' => false,
-                    'product_management' => false,
-                    'category_management' => false,
-                    'supplier_management' => false,
-                    'stock_entry' => false,
-                    'stock_exit' => true,
-                    'stock_return' => true,
-                    'stock_count' => false,
-                    'reports_view' => false,
-                    'reports_export' => false,
-                    'system_settings' => false
-                ]),
+                'display_name' => 'Teslimat Elemanı',
+                'description' => 'Sadece stok çıkış ve iade yetkisi olan kullanıcı',
+                'permissions' => [
+                    'stock_exit',
+                    'stock_return',
+                    'customer_management' // Müşteri seçebilsin diye
+                ],
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now()
             ]
         ];
 
-        DB::table('roles')->insert($roles);
+        foreach ($roles as $roleData) {
+            Role::create($roleData);
+        }
     }
 }

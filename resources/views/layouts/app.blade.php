@@ -85,7 +85,7 @@
                         </li>
                         @endif
                         
-                        @if(Auth::user()->hasPermission('user_management'))
+                        @if(Auth::user()->hasPermission('customer_management'))
                         <li class="nav-item">
                             <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
                                 <i class="bi bi-people me-2"></i>Müşteriler
@@ -112,7 +112,15 @@
                         @if(Auth::user()->hasPermission('user_management'))
                         <li class="nav-item">
                             <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                                <i class="bi bi-people me-2"></i>Kullanıcılar
+                                <i class="bi bi-person-check me-2"></i>Kullanıcılar
+                            </a>
+                        </li>
+                        @endif
+                        
+                        @if(Auth::user()->hasPermission('role_management'))
+                        <li class="nav-item">
+                            <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                                <i class="bi bi-shield-check me-2"></i>Roller & Yetkiler
                             </a>
                         </li>
                         @endif

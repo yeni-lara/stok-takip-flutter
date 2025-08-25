@@ -33,6 +33,9 @@ Route::get('/dashboard', function () {
     // Müşteri yönetimi
     Route::resource('customers', App\Http\Controllers\CustomerController::class);
     
+    // Rol yönetimi
+    Route::resource('roles', App\Http\Controllers\RoleController::class);
+    
     // Stok hareketleri
     Route::resource('stock-movements', StockMovementController::class);
     
