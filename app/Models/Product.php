@@ -90,7 +90,7 @@ class Product extends Model
     /**
      * Stok güncelle
      */
-    public function updateStock($quantity, $type, $userId, $note = null, $referenceNumber = null)
+    public function updateStock($quantity, $type, $userId, $customerId = null, $note = null, $referenceNumber = null)
     {
         $previousStock = $this->current_stock;
 
@@ -117,6 +117,7 @@ class Product extends Model
         StockMovement::create([
             'product_id' => $this->id,
             'user_id' => $userId,
+            'customer_id' => $customerId,
             'type' => $type,
             'quantity' => $quantity,
             'previous_stock' => $previousStock,

@@ -12,6 +12,7 @@ class StockMovement extends Model
     protected $fillable = [
         'product_id',
         'user_id',
+        'customer_id',
         'type',
         'quantity',
         'previous_stock',
@@ -40,6 +41,14 @@ class StockMovement extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Hareketin ait olduğu müşteri (sadece çıkış ve iade için)
+     */
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     /**
