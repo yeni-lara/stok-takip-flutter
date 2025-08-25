@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Stok Takip Sistemi') }}</title>
 
@@ -146,7 +146,7 @@
                     <div class="container-fluid">
                         @isset($header)
                             <h1 class="navbar-brand mb-0 h1">{{ $header }}</h1>
-                        @endisset
+            @endisset
                         
                         <div class="ms-auto">
                             <!-- Düşük stok uyarıları -->
@@ -164,7 +164,7 @@
                     </div>
                 </nav>
 
-                <!-- Page Content -->
+            <!-- Page Content -->
                 <main class="p-4">
                     <!-- Flash Messages -->
                     @if(session('success'))
@@ -188,8 +188,8 @@
                         </div>
                     @endif
 
-                    {{ $slot }}
-                </main>
+                {{ $slot }}
+            </main>
             </div>
         </div>
     </div>
@@ -198,5 +198,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     @stack('scripts')
-</body>
+    </body>
 </html>
