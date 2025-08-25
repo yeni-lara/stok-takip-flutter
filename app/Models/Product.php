@@ -138,4 +138,23 @@ class Product extends Model
     {
         return $this->current_stock * $this->price_with_tax;
     }
+
+    /**
+     * Ürün resmi URL'si
+     */
+    public function getImageUrlAttribute()
+    {
+        if ($this->image_path) {
+            return asset($this->image_path);
+        }
+        return asset('images/no-image.svg'); // Varsayılan resim
+    }
+
+    /**
+     * Resim var mı kontrolü
+     */
+    public function hasImage()
+    {
+        return !empty($this->image_path) && file_exists(public_path($this->image_path));
+    }
 }
