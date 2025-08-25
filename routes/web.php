@@ -30,6 +30,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Tedarikçi yönetimi
     Route::resource('suppliers', SupplierController::class);
     
+    // Müşteri yönetimi
+    Route::resource('customers', App\Http\Controllers\CustomerController::class);
+    
     // Stok hareketleri
     Route::resource('stock-movements', StockMovementController::class);
     

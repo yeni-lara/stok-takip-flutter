@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->enum('type', ['individual', 'corporate'])->default('individual'); // bireysel/kurumsal
-            $table->string('name'); // Ad/Firma adı
+            $table->string('name')->nullable(); // Ad/Firma adı
             $table->string('surname')->nullable(); // Soyad (bireysel için)
             $table->string('company_name')->nullable(); // Firma adı (kurumsal için)
             $table->string('phone')->nullable();

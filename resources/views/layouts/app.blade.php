@@ -85,6 +85,14 @@
                         </li>
                         @endif
                         
+                        @if(Auth::user()->hasPermission('user_management'))
+                        <li class="nav-item">
+                            <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
+                                <i class="bi bi-people me-2"></i>Müşteriler
+                            </a>
+                        </li>
+                        @endif
+                        
                         @if(Auth::user()->hasPermission('stock_entry') || Auth::user()->hasPermission('stock_exit') || Auth::user()->hasPermission('stock_return'))
                         <li class="nav-item">
                             <a href="{{ route('stock-movements.index') }}" class="nav-link {{ request()->routeIs('stock-movements.*') ? 'active' : '' }}">
