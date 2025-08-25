@@ -12,11 +12,11 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -45,9 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/export/stock-value/{format}', [ReportController::class, 'exportStockValue'])->name('reports.export.stock-value');
     
     // Kullanıcı yönetimi (sadece admin)
-    Route::middleware('can:manage-users')->group(function () {
-        Route::resource('users', App\Http\Controllers\UserController::class);
-    });
+    Route::resource('users', App\Http\Controllers\UserController::class);
     
     // API routes for mobile/barcode scanning
     Route::prefix('api')->group(function () {

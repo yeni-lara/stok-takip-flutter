@@ -5,22 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Gate;
 
 class CategoryController extends Controller
 {
     use AuthorizesRequests;
-
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('can:manage-categories');
-    }
 
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+        // Yetki kontrolü
+        if (!Gate::allows('manage-categories')) {
+            abort(403, 'Bu işlemi gerçekleştirme yetkiniz yok.');
+        }
+
         $categories = Category::withCount('products')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -33,6 +33,11 @@ class CategoryController extends Controller
      */
     public function create()
     {
+        // Yetki kontrolü
+        if (!Gate::allows('manage-categories')) {
+            abort(403, 'Bu işlemi gerçekleştirme yetkiniz yok.');
+        }
+
         return view('categories.create');
     }
 
@@ -41,6 +46,11 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        // Yetki kontrolü
+        if (!Gate::allows('manage-categories')) {
+            abort(403, 'Bu işlemi gerçekleştirme yetkiniz yok.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255|unique:categories',
             'description' => 'nullable|string',
@@ -62,6 +72,11 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
+        // Yetki kontrolü
+        if (!Gate::allows('manage-categories')) {
+            abort(403, 'Bu işlemi gerçekleştirme yetkiniz yok.');
+        }
+
         $category->load(['products' => function($query) {
             $query->active()->latest()->take(10);
         }]);
@@ -78,6 +93,11 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
+        // Yetki kontrolü
+        if (!Gate::allows('manage-categories')) {
+            abort(403, 'Bu işlemi gerçekleştirme yetkiniz yok.');
+        }
+
         return view('categories.edit', compact('category'));
     }
 
@@ -86,6 +106,11 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
+        // Yetki kontrolü
+        if (!Gate::allows('manage-categories')) {
+            abort(403, 'Bu işlemi gerçekleştirme yetkiniz yok.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
             'description' => 'nullable|string',
@@ -107,6 +132,11 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
+        // Yetki kontrolü
+        if (!Gate::allows('manage-categories')) {
+            abort(403, 'Bu işlemi gerçekleştirme yetkiniz yok.');
+        }
+
         // Kategoriye ait ürün var mı kontrol et
         if ($category->products()->count() > 0) {
             return redirect()->route('categories.index')
