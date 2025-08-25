@@ -15,18 +15,20 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role_id',
+        'is_active',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -43,6 +45,52 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Kullanıcının rolü ile ilişki
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Kullanıcının stok hareketleri ile ilişki
+     */
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    /**
+     * Belirli bir izni kontrol et
+     */
+    public function hasPermission($permission)
+    {
+        if (!$this->role) {
+            return false;
+        }
+
+        $permissions = json_decode($this->role->permissions, true);
+        return isset($permissions[$permission]) && $permissions[$permission] === true;
+    }
+
+    /**
+     * Admin kontrolü
+     */
+    public function isAdmin()
+    {
+        return $this->role && $this->role->name === 'admin';
+    }
+
+    /**
+     * Aktif kullanıcı kontrolü
+     */
+    public function isActive()
+    {
+        return $this->is_active;
     }
 }
