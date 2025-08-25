@@ -59,6 +59,14 @@ Route::get('/dashboard', function () {
     // Kullanıcı yönetimi (sadece admin)
     Route::resource('users', App\Http\Controllers\UserController::class);
     
+    // Profil yönetimi
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/password', [App\Http\Controllers\ProfileController::class, 'editPassword'])->name('profile.password');
+    Route::patch('/profile/password', [App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::delete('/profile', [App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+
     // API routes for mobile/barcode scanning
     Route::prefix('api')->group(function () {
         Route::get('/products/search', [ProductController::class, 'search'])->name('api.products.search');

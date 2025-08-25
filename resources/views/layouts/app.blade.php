@@ -134,12 +134,22 @@
                             <strong>{{ Auth::user()->name }}</strong>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profil</a></li>
+                            <li><a class="dropdown-item" href="{{ route('profile.show') }}">
+                                <i class="bi bi-person-circle me-2"></i>Profilim
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                <i class="bi bi-pencil me-2"></i>Profil Düzenle
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('profile.password') }}">
+                                <i class="bi bi-key me-2"></i>Şifre Değiştir
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="dropdown-item">Çıkış Yap</button>
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap
+                                    </button>
                                 </form>
                             </li>
                         </ul>
