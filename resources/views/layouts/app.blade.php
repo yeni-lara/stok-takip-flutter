@@ -101,7 +101,7 @@
                         </li>
                         @endif
                         
-                        @if(Auth::user()->hasPermission('reports_view'))
+                        @if(Auth::user()->hasPermission('view_reports'))
                         <li class="nav-item">
                             <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                                 <i class="bi bi-graph-up me-2"></i>Raporlar

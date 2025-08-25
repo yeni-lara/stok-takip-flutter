@@ -75,12 +75,12 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         // Rapor görüntüleme
-        Gate::define('view-reports', function (User $user) {
+        Gate::define('view_reports', function (User $user) {
             return $user->hasPermission('view_reports');
         });
 
         // Rapor dışa aktarma
-        Gate::define('export-reports', function (User $user) {
+        Gate::define('export_reports', function (User $user) {
             return $user->hasPermission('export_reports');
         });
 

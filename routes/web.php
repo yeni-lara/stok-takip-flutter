@@ -46,15 +46,18 @@ Route::get('/dashboard', function () {
     Route::get('/stock/return', [StockMovementController::class, 'stockReturn'])->name('stock.return');
     
     // Raporlar
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/reports/stock-status', [ReportController::class, 'stockStatus'])->name('reports.stock-status');
-    Route::get('/reports/stock-movements', [ReportController::class, 'stockMovements'])->name('reports.stock-movements');
-    Route::get('/reports/stock-value', [ReportController::class, 'stockValue'])->name('reports.stock-value');
-    
-    // Export işlemleri
-    Route::get('/reports/export/stock-status/{format}', [ReportController::class, 'exportStockStatus'])->name('reports.export.stock-status');
-    Route::get('/reports/export/stock-movements/{format}', [ReportController::class, 'exportStockMovements'])->name('reports.export.stock-movements');
-    Route::get('/reports/export/stock-value/{format}', [ReportController::class, 'exportStockValue'])->name('reports.export.stock-value');
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/stock-status', [ReportController::class, 'stockStatus'])->name('stock-status');
+        Route::get('/stock-movements', [ReportController::class, 'stockMovements'])->name('stock-movements');
+        Route::get('/value-analysis', [ReportController::class, 'valueAnalysis'])->name('value-analysis');
+        
+        // Export routes
+        Route::get('/export/stock-status/excel', [ReportController::class, 'exportStockStatusExcel'])->name('export.stock-status.excel');
+        Route::get('/export/stock-status/pdf', [ReportController::class, 'exportStockStatusPdf'])->name('export.stock-status.pdf');
+        Route::get('/export/movements/excel', [ReportController::class, 'exportMovementsExcel'])->name('export.movements.excel');
+        Route::get('/export/movements/pdf', [ReportController::class, 'exportMovementsPdf'])->name('export.movements.pdf');
+    });
     
     // Kullanıcı yönetimi (sadece admin)
     Route::resource('users', App\Http\Controllers\UserController::class);

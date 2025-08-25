@@ -18,7 +18,7 @@ class StockMovementController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Gate::allows('view-reports')) {
+        if (!Gate::allows('view_reports')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
