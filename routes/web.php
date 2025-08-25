@@ -33,6 +33,9 @@ Route::get('/dashboard', function () {
     // Müşteri yönetimi
     Route::resource('customers', App\Http\Controllers\CustomerController::class);
     
+    // Kullanıcı yönetimi
+    Route::resource('users', App\Http\Controllers\UserController::class);
+    
     // Rol yönetimi
     Route::resource('roles', App\Http\Controllers\RoleController::class);
     
