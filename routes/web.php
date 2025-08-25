@@ -77,4 +77,25 @@ Route::get('/dashboard', function () {
     });
 });
 
+// Barkod ile ürün getir (geçici test route)
+Route::get('/test-barcode/{barcode}', function ($barcode) {
+    $product = \App\Models\Product::with('category')
+        ->where('barcode', $barcode)
+        ->where('is_active', true)
+        ->first();
+    
+    if (!$product) {
+        return response()->json(['message' => 'Ürün bulunamadı', 'barcode' => $barcode], 404);
+    }
+    
+    return response()->json([
+        'id' => $product->id,
+        'name' => $product->name,
+        'barcode' => $product->barcode,
+        'current_stock' => $product->current_stock,
+        'category' => $product->category->name ?? null,
+        'unit_price' => $product->unit_price
+    ]);
+})->middleware('auth');
+
 require __DIR__.'/auth.php';

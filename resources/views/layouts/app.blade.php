@@ -46,6 +46,7 @@
 <body>
     <div class="container-fluid p-0">
         <div class="row g-0">
+            @if(Auth::user()->role_id != 3)
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 d-md-block sidebar">
                 <div class="position-sticky pt-3">
@@ -156,9 +157,11 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Main content -->
-            <div class="col-md-9 col-lg-10 main-content">
+            <div class="{{ Auth::user()->role_id == 3 ? 'col-12' : 'col-md-9 col-lg-10' }} main-content">
+                @if(Auth::user()->role_id != 3)
                 <!-- Top Navigation -->
                 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
                     <div class="container-fluid">
@@ -181,6 +184,7 @@
                         </div>
                     </div>
                 </nav>
+                @endif
 
             <!-- Page Content -->
                 <main class="p-4">

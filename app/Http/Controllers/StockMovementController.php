@@ -145,7 +145,7 @@ class StockMovementController extends Controller
                 'previous_stock' => $product->current_stock,
                 'new_stock' => $this->calculateNewStock($product->current_stock, $validatedData['quantity'], $type),
                 'note' => $validatedData['note'] ?? null,
-                'reference_number' => $validatedData['reference_number'] ?: $this->generateReferenceNumber($type),
+                'reference_number' => !empty($validatedData['reference_number']) ? $validatedData['reference_number'] : $this->generateReferenceNumber($type),
             ]);
 
             // Ürün stokunu güncelle
@@ -157,6 +157,12 @@ class StockMovementController extends Controller
             'çıkış' => 'Stok çıkışı başarıyla kaydedildi.',
             'iade' => 'Stok iadesi başarıyla kaydedildi.',
         ];
+
+        // Teslimat elemanı için özel yönlendirme
+        if (Auth::user()->role_id == 3) {
+            return redirect()->route('dashboard')
+                ->with('success', $messages[$type] . ' Dashboard\'a dönmek için ana sayfayı kullanabilirsiniz.');
+        }
 
         return redirect()->route('stock-movements.index')
             ->with('success', $messages[$type]);
@@ -247,6 +253,12 @@ class StockMovementController extends Controller
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
+        // Teslimat elemanı için özel sayfa
+        if (Auth::user()->role_id == 3) {
+            $customers = Customer::active()->get();
+            return view('stock-movements.delivery-exit', compact('customers'));
+        }
+
         return redirect()->route('stock-movements.create', ['type' => 'çıkış']);
     }
 
@@ -257,6 +269,12 @@ class StockMovementController extends Controller
     {
         if (!Gate::allows('stock_return')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
+        }
+
+        // Teslimat elemanı için özel sayfa
+        if (Auth::user()->role_id == 3) {
+            $customers = Customer::active()->get();
+            return view('stock-movements.delivery-return', compact('customers'));
         }
 
         return redirect()->route('stock-movements.create', ['type' => 'iade']);
