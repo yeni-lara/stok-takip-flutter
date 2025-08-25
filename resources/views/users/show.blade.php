@@ -54,28 +54,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Rol Bilgileri -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="bi bi-shield-check me-2"></i>Rol ve Yetkiler
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <h6 class="text-primary">{{ $user->role->display_name }}</h6>
-                            <p class="text-muted mb-3">{{ $user->role->description }}</p>
-                            
-                            @if($user->role->permissions && count($user->role->permissions) > 0)
-                                <small class="text-muted">Yetkiler:</small>
-                                <div class="d-flex flex-wrap gap-1 mt-2">
-                                    @foreach($user->role->permissions as $permission)
-                                        <span class="badge bg-light text-dark">{{ $permission }}</span>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Sağ Kolon - İstatistikler ve Hareketler -->

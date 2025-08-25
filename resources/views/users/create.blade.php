@@ -110,33 +110,6 @@
                     </form>
                 </div>
             </div>
-
-            <!-- Rol Bilgileri Kartı -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle me-2"></i>Rol Açıklamaları
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @foreach($roles as $role)
-                        <div class="mb-3">
-                            <h6 class="text-primary">{{ $role->display_name }}</h6>
-                            <p class="text-muted mb-2">{{ $role->description }}</p>
-                            @if($role->permissions && count($role->permissions) > 0)
-                                <div class="d-flex flex-wrap gap-1">
-                                    @foreach($role->permissions as $permission)
-                                        <span class="badge bg-light text-dark">{{ $permission }}</span>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-                        @if(!$loop->last)
-                            <hr>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
         </div>
     </div>
 </div>
