@@ -74,7 +74,7 @@ class User extends Authenticatable
             return false;
         }
 
-        $permissions = json_decode($this->role->permissions, true);
+        $permissions = $this->role->permissions;
         return isset($permissions[$permission]) && $permissions[$permission] === true;
     }
 
