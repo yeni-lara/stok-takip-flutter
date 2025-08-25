@@ -15,22 +15,10 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <form method="GET" action="{{ route('customers.index') }}" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="search" class="form-label">Arama</label>
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">Firma Adı Ara</label>
                             <input type="text" class="form-control" id="search" name="search" 
-                                   value="{{ request('search') }}" placeholder="İsim, telefon, email...">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="type" class="form-label">Tip</label>
-                            <select class="form-select" id="type" name="type">
-                                <option value="">Tümü</option>
-                                <option value="individual" {{ request('type') === 'individual' ? 'selected' : '' }}>
-                                    Bireysel
-                                </option>
-                                <option value="corporate" {{ request('type') === 'corporate' ? 'selected' : '' }}>
-                                    Kurumsal
-                                </option>
-                            </select>
+                                   value="{{ request('search') }}" placeholder="Firma adı...">
                         </div>
                         <div class="col-md-2">
                             <label for="status" class="form-label">Durum</label>
@@ -45,24 +33,13 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label for="city" class="form-label">Şehir</label>
-                            <input type="text" class="form-control" id="city" name="city" 
-                                   value="{{ request('city') }}" placeholder="Şehir...">
-                        </div>
-                        <div class="col-md-2">
                             <label for="sort_by" class="form-label">Sıralama</label>
                             <select class="form-select" id="sort_by" name="sort_by">
                                 <option value="created_at" {{ request('sort_by') === 'created_at' ? 'selected' : '' }}>
                                     Kayıt Tarihi
                                 </option>
-                                <option value="name" {{ request('sort_by') === 'name' ? 'selected' : '' }}>
-                                    İsim
-                                </option>
                                 <option value="company_name" {{ request('sort_by') === 'company_name' ? 'selected' : '' }}>
-                                    Firma
-                                </option>
-                                <option value="city" {{ request('sort_by') === 'city' ? 'selected' : '' }}>
-                                    Şehir
+                                    Firma Adı
                                 </option>
                             </select>
                         </div>
@@ -93,11 +70,9 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Müşteri</th>
-                                        <th>Tip</th>
-                                        <th>İletişim</th>
-                                        <th>Şehir</th>
+                                        <th>Firma Adı</th>
                                         <th>Durum</th>
+                                        <th>Kayıt Tarihi</th>
                                         <th>Son İşlem</th>
                                         <th>İşlemler</th>
                                     </tr>
@@ -108,38 +83,22 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar-sm me-3">
-                                                        <span class="badge bg-{{ $customer->type === 'individual' ? 'primary' : 'info' }} rounded-pill">
-                                                            <i class="bi bi-{{ $customer->type === 'individual' ? 'person' : 'building' }}"></i>
+                                                        <span class="badge bg-primary rounded-pill">
+                                                            <i class="bi bi-building"></i>
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <h6 class="mb-0">{{ $customer->full_name }}</h6>
-                                                        @if($customer->type === 'corporate' && $customer->tax_number)
-                                                            <small class="text-muted">VN: {{ $customer->tax_number }}</small>
-                                                        @endif
+                                                        <h6 class="mb-0">{{ $customer->company_name }}</h6>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <span class="badge bg-{{ $customer->type === 'individual' ? 'primary' : 'info' }}">
-                                                    {{ $customer->type_text }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="small">
-                                                    @if($customer->phone)
-                                                        <div><i class="bi bi-telephone me-1"></i>{{ $customer->phone }}</div>
-                                                    @endif
-                                                    @if($customer->email)
-                                                        <div><i class="bi bi-envelope me-1"></i>{{ $customer->email }}</div>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                            <td>{{ $customer->city ?? '-' }}</td>
                                             <td>
                                                 <span class="badge bg-{{ $customer->is_active ? 'success' : 'danger' }}">
                                                     {{ $customer->is_active ? 'Aktif' : 'Pasif' }}
                                                 </span>
+                                            </td>
+                                            <td>
+                                                <small>{{ $customer->created_at->format('d.m.Y') }}</small>
                                             </td>
                                             <td>
                                                 @if($customer->last_transaction_date)
@@ -183,7 +142,7 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <i class="bi bi-people display-1 text-muted"></i>
+                            <i class="bi bi-building display-1 text-muted"></i>
                             <h4 class="mt-3">Müşteri bulunamadı</h4>
                             <p class="text-muted">Filtreleri değiştirin veya yeni müşteri ekleyin.</p>
                             <a href="{{ route('customers.create') }}" class="btn btn-primary">

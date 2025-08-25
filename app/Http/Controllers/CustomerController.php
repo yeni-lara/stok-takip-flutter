@@ -22,18 +22,7 @@ class CustomerController extends Controller
         // Arama
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('surname', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        // Tip filtresi
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            $query->where('company_name', 'like', "%{$search}%");
         }
 
         // Durum filtresi
@@ -41,22 +30,13 @@ class CustomerController extends Controller
             $query->where('is_active', $request->status === 'active');
         }
 
-        // Şehir filtresi
-        if ($request->filled('city')) {
-            $query->where('city', 'like', "%{$request->city}%");
-        }
-
         // Sıralama
         $sortBy = $request->get('sort_by', 'created_at');
         $sortDir = $request->get('sort_dir', 'desc');
         
-        $allowedSorts = ['name', 'company_name', 'type', 'city', 'created_at'];
+        $allowedSorts = ['company_name', 'created_at'];
         if (in_array($sortBy, $allowedSorts)) {
-            if ($sortBy === 'name') {
-                $query->orderBy('name', $sortDir)->orderBy('surname', $sortDir);
-            } else {
-                $query->orderBy($sortBy, $sortDir);
-            }
+            $query->orderBy($sortBy, $sortDir);
         }
 
         $customers = $query->paginate(10)->appends($request->all());
@@ -85,27 +65,10 @@ class CustomerController extends Controller
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
-        $rules = [
-            'type' => 'required|in:individual,corporate',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'tax_number' => 'nullable|string|max:20',
-            'tax_office' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
+        $validatedData = $request->validate([
+            'company_name' => 'required|string|max:255',
             'is_active' => 'boolean',
-        ];
-
-        // Tip göre validasyon kuralları
-        if ($request->type === 'individual') {
-            $rules['name'] = 'required|string|max:255';
-            $rules['surname'] = 'required|string|max:255';
-        } else {
-            $rules['company_name'] = 'required|string|max:255';
-        }
-
-        $validatedData = $request->validate($rules);
+        ]);
 
         Customer::create($validatedData);
 
@@ -153,27 +116,10 @@ class CustomerController extends Controller
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
-        $rules = [
-            'type' => 'required|in:individual,corporate',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'tax_number' => 'nullable|string|max:20',
-            'tax_office' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
+        $validatedData = $request->validate([
+            'company_name' => 'required|string|max:255',
             'is_active' => 'boolean',
-        ];
-
-        // Tip göre validasyon kuralları
-        if ($request->type === 'individual') {
-            $rules['name'] = 'required|string|max:255';
-            $rules['surname'] = 'required|string|max:255';
-        } else {
-            $rules['company_name'] = 'required|string|max:255';
-        }
-
-        $validatedData = $request->validate($rules);
+        ]);
 
         $customer->update($validatedData);
 
