@@ -93,7 +93,7 @@
                         </li>
                         @endif
                         
-                        @if(Auth::user()->hasPermission('stock_entry') || Auth::user()->hasPermission('stock_exit') || Auth::user()->hasPermission('stock_return'))
+                        @if(Auth::user()->hasPermission('stock_entry') || Auth::user()->hasPermission('stock_exit') || Auth::user()->hasPermission('stock_return') || Auth::user()->hasPermission('view_reports'))
                         <li class="nav-item">
                             <a href="{{ route('stock-movements.index') }}" class="nav-link {{ request()->routeIs('stock-movements.*') ? 'active' : '' }}">
                                 <i class="bi bi-arrow-left-right me-2"></i>Stok Hareketleri

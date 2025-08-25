@@ -95,4 +95,12 @@ class User extends Authenticatable
     {
         return $this->is_active;
     }
+
+    /**
+     * Aktif kullanıcılar scope'u
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

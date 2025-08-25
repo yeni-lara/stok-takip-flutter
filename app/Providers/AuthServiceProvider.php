@@ -53,15 +53,15 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         // Stok işlemleri
-        Gate::define('stock-entry', function (User $user) {
+        Gate::define('stock_entry', function (User $user) {
             return $user->hasPermission('stock_entry');
         });
 
-        Gate::define('stock-exit', function (User $user) {
+        Gate::define('stock_exit', function (User $user) {
             return $user->hasPermission('stock_exit');
         });
 
-        Gate::define('stock-return', function (User $user) {
+        Gate::define('stock_return', function (User $user) {
             return $user->hasPermission('stock_return');
         });
 

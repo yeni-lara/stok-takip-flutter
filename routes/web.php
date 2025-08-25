@@ -38,6 +38,9 @@ Route::get('/dashboard', function () {
     
     // Stok hareketleri
     Route::resource('stock-movements', StockMovementController::class);
+    Route::get('/stock/entry', [StockMovementController::class, 'stockEntry'])->name('stock.entry');
+    Route::get('/stock/exit', [StockMovementController::class, 'stockExit'])->name('stock.exit');
+    Route::get('/stock/return', [StockMovementController::class, 'stockReturn'])->name('stock.return');
     
     // Raporlar
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

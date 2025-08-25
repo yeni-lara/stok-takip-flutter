@@ -88,21 +88,19 @@ class Product extends Model
     }
 
     /**
-     * Stok güncelle
+     * Sadece stok güncelle (StockMovement kaydı Controller'da oluşturuluyor)
      */
-    public function updateStock($quantity, $type, $userId, $customerId = null, $note = null, $referenceNumber = null)
+    public function updateStock($quantity, $type, $customerId = null)
     {
         $previousStock = $this->current_stock;
 
         switch ($type) {
             case 'giriş':
+            case 'iade':
                 $newStock = $previousStock + $quantity;
                 break;
             case 'çıkış':
                 $newStock = $previousStock - $quantity;
-                break;
-            case 'iade':
-                $newStock = $previousStock + $quantity;
                 break;
             default:
                 throw new \InvalidArgumentException('Geçersiz hareket tipi: ' . $type);
@@ -113,20 +111,7 @@ class Product extends Model
             throw new \Exception('Stok miktarı negatif olamaz.');
         }
 
-        // Stok hareketini kaydet
-        StockMovement::create([
-            'product_id' => $this->id,
-            'user_id' => $userId,
-            'customer_id' => $customerId,
-            'type' => $type,
-            'quantity' => $quantity,
-            'previous_stock' => $previousStock,
-            'new_stock' => $newStock,
-            'note' => $note,
-            'reference_number' => $referenceNumber,
-        ]);
-
-        // Ürün stokunu güncelle
+        // Sadece ürün stokunu güncelle
         $this->update(['current_stock' => $newStock]);
 
         return $this;
