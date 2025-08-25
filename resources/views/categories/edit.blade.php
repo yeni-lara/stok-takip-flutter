@@ -1,7 +1,24 @@
-<x-app-layout>
-    <x-slot name="header">
-        <i class="bi bi-tags me-2"></i>Kategori Düzenle: {{ $category->name }}
-    </x-slot>
+@extends('layouts.app')
+
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-tags me-2"></i>Kategori Düzenle: {{ $category->name }}
+                </h1>
+                <div class="btn-group">
+                    <a href="{{ route('categories.show', $category) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i>Görüntüle
+                    </a>
+                    <a href="{{ route('categories.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-8 mx-auto">
@@ -123,4 +140,5 @@
             @endif
         </div>
     </div>
-</x-app-layout> 
+</div>
+@endsection 

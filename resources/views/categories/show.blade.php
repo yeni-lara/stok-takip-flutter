@@ -1,8 +1,28 @@
-<x-app-layout>
-    <x-slot name="header">
-        <i class="bi bi-tags me-2"></i>{{ $category->name }} Kategorisi
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-tags me-2"></i>{{ $category->name }}
+                    @if(!$category->is_active)
+                        <span class="badge bg-danger ms-2">Pasif</span>
+                    @endif
+                </h1>
+                <div class="btn-group">
+                    <a href="{{ route('categories.edit', $category) }}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i>Düzenle
+                    </a>
+                    <a href="{{ route('categories.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <!-- Kategori Bilgileri -->
         <div class="col-md-8">
@@ -193,4 +213,5 @@
             </div>
         </div>
     </div>
-</x-app-layout> 
+</div>
+@endsection 

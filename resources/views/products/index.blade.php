@@ -1,8 +1,20 @@
-<x-app-layout>
-    <x-slot name="header">
-        <i class="bi bi-box me-2"></i>Ürünler
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-box me-2"></i>Ürünler
+                </h1>
+                <a href="{{ route('products.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Yeni Ürün
+                </a>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="col-md-12">
             <!-- Filtreleme ve Arama -->
@@ -240,8 +252,10 @@
             </div>
         </div>
     </div>
+</div>
+@endsection
 
-    @push('scripts')
+@push('scripts')
     <script>
         // Barkod okuyucu (gelecekte mobil entegrasyon için)
         document.addEventListener('keydown', function(e) {
@@ -253,5 +267,4 @@
             }
         });
     </script>
-    @endpush
-</x-app-layout> 
+@endpush 

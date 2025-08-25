@@ -1,8 +1,20 @@
-<x-app-layout>
-    <x-slot name="header">
-        <i class="bi bi-box me-2"></i>Yeni Ürün Oluştur
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-box me-2"></i>Yeni Ürün Oluştur
+                </h1>
+                <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Geri Dön
+                </a>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="col-md-8">
             <div class="card">
@@ -280,8 +292,10 @@
             </div>
         </div>
     </div>
+</div>
+@endsection
 
-    @push('scripts')
+@push('scripts')
     <script>
         // Resim önizleme
         document.getElementById('image').addEventListener('change', function(e) {
@@ -352,5 +366,4 @@
             updateBarcodePreview(document.getElementById('barcode').value);
         });
     </script>
-    @endpush
-</x-app-layout> 
+@endpush 

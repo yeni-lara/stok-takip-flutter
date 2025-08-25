@@ -1,8 +1,31 @@
-<x-app-layout>
-    <x-slot name="header">
-        <i class="bi bi-box me-2"></i>{{ $product->name }}
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-box me-2"></i>{{ $product->name }}
+                    @if(!$product->is_active)
+                        <span class="badge bg-danger ms-2">Pasif</span>
+                    @endif
+                    @if($product->isLowStock())
+                        <span class="badge bg-warning ms-2">Az Stok</span>
+                    @endif
+                </h1>
+                <div class="btn-group">
+                    <a href="{{ route('products.edit', $product) }}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i>Düzenle
+                    </a>
+                    <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <!-- Ana Ürün Bilgileri -->
         <div class="col-md-8">
@@ -300,8 +323,10 @@
             </div>
         </div>
     </div>
+</div>
+@endsection
 
-    @push('scripts')
+@push('scripts')
     <script>
         // Barkod kopyalama
         document.addEventListener('DOMContentLoaded', function() {
@@ -322,5 +347,4 @@
             }
         });
     </script>
-    @endpush
-</x-app-layout> 
+@endpush 

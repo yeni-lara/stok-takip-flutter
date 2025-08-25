@@ -1,8 +1,20 @@
-<x-app-layout>
-    <x-slot name="header">
-        <i class="bi bi-tags me-2"></i>Kategoriler
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-tags me-2"></i>Kategoriler
+                </h1>
+                <a href="{{ route('categories.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Yeni Kategori
+                </a>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="col-md-12">
             <div class="card">
@@ -102,4 +114,5 @@
             </div>
         </div>
     </div>
-</x-app-layout> 
+</div>
+@endsection 

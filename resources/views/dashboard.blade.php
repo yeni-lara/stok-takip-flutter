@@ -1,8 +1,17 @@
-<x-app-layout>
-    <x-slot name="header">
-        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-    </x-slot>
+@extends('layouts.app')
 
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                </h1>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <!-- İstatistik Kartları -->
         <div class="col-md-3 mb-4">
@@ -240,4 +249,5 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection
