@@ -109,10 +109,10 @@
                             <!-- Müşteri -->
                             <div class="col-md-6">
                                 <label for="customer_id" class="form-label">
-                                    <i class="bi bi-building me-1"></i>İade Eden Müşteri
+                                    <i class="bi bi-building me-1"></i>İade Eden Müşteri (Opsiyonel)
                                 </label>
-                                <select class="form-select form-select-lg" id="customer_id" name="customer_id" required>
-                                    <option value="">Müşteri seçin</option>
+                                <select class="form-select form-select-lg" id="customer_id" name="customer_id">
+                                    <option value="">Müşteri seçin (opsiyonel)</option>
                                     @foreach($customers as $customer)
                                         <option value="{{ $customer->id }}">{{ $customer->company_name }}</option>
                                     @endforeach
@@ -123,11 +123,12 @@
                             <!-- Not -->
                             <div class="col-12">
                                 <label for="note" class="form-label">
-                                    <i class="bi bi-sticky me-1"></i>İade Sebebi/Not
+                                    <i class="bi bi-sticky me-1"></i>İade Sebebi/Açıklama
                                 </label>
                                 <textarea class="form-control" id="note" name="note" rows="3" 
-                                          placeholder="İade sebebi veya açıklama..." required></textarea>
-                                <div class="form-text">İade sebebini belirtmeniz zorunludur</div>
+                                          placeholder="İade sebebi veya açıklama..."></textarea>
+                                <div class="form-text"></div>
+                                <div class="invalid-feedback"></div>
                             </div>
 
                             <!-- Mevcut Stok Bilgisi -->
@@ -239,11 +240,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Form geçerliliğini kontrol et
     function checkFormValid() {
+        const customerId = document.getElementById('customer_id').value;
+        const noteValue = noteInput.value.trim();
+        
         const isValid = productIdInput.value && 
-                       quantityInput.value && 
-                       document.getElementById('customer_id').value &&
-                       noteInput.value.trim().length > 0;
+                       quantityInput.value &&
+                       (customerId || noteValue); // Müşteri VEYA açıklama olmalı
+        
         submitBtn.disabled = !isValid;
+        
+        // Hata mesajları göster/gizle
+        if (!customerId && !noteValue) {
+            noteInput.classList.add('is-invalid');
+            noteInput.nextElementSibling.nextElementSibling.textContent = 'Müşteri seçilmediğinde açıklama zorunludur';
+        } else {
+            noteInput.classList.remove('is-invalid');
+        }
     }
 
     // Form elemanları değiştiğinde kontrol et
@@ -320,9 +332,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (!noteInput.value.trim()) {
+        // Müşteri veya açıklama kontrolü
+        const customerId = document.getElementById('customer_id').value;
+        const noteValue = noteInput.value.trim();
+        if (!customerId && !noteValue) {
             e.preventDefault();
-            alert('İade sebebini belirtmeniz zorunludur!');
+            alert('!');
             return;
         }
     });

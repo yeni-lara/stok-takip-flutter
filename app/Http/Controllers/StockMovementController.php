@@ -129,9 +129,11 @@ class StockMovementController extends Controller
             return back()->withErrors(['quantity' => 'Yeterli stok bulunmamaktadır. Mevcut stok: ' . $product->current_stock]);
         }
 
-        // Müşteri kontrolü (çıkış ve iade için)
-        if (in_array($type, ['çıkış', 'iade']) && !$validatedData['customer_id']) {
-            return back()->withErrors(['customer_id' => 'Bu işlem türü için müşteri seçimi zorunludur.']);
+        // Müşteri veya açıklama kontrolü (çıkış ve iade için)
+        if (in_array($type, ['çıkış', 'iade'])) {
+            if (!$validatedData['customer_id'] && empty($validatedData['note'])) {
+                return back()->withErrors(['customer_or_note' => '.']);
+            }
         }
 
         DB::transaction(function () use ($validatedData, $product, $type) {
@@ -173,7 +175,7 @@ class StockMovementController extends Controller
      */
     public function show(StockMovement $stockMovement)
     {
-        if (!Gate::allows('view-reports')) {
+        if (!Gate::allows('view_reports')) {
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 

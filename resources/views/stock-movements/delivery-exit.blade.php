@@ -19,7 +19,7 @@
                 <p class="text-muted">İşleminiz başarıyla tamamlandı.</p>
             </div>
             <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-success" onclick="document.getElementById('successModal').style.display='none'"
+                <button type="button" class="btn btn-success" onclick="document.getElementById('successModal').style.display='none'">
                     <i class="bi bi-check me-2"></i>Tamam
                 </button>
                 <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
@@ -108,10 +108,10 @@
                             <!-- Müşteri -->
                             <div class="col-md-6">
                                 <label for="customer_id" class="form-label">
-                                    <i class="bi bi-building me-1"></i>Müşteri
+                                    <i class="bi bi-building me-1"></i>Müşteri (Opsiyonel)
                                 </label>
-                                <select class="form-select form-select-lg" id="customer_id" name="customer_id" required>
-                                    <option value="">Müşteri seçin</option>
+                                <select class="form-select form-select-lg" id="customer_id" name="customer_id">
+                                    <option value="">Müşteri seçin (opsiyonel)</option>
                                     @foreach($customers as $customer)
                                         <option value="{{ $customer->id }}">{{ $customer->company_name }}</option>
                                     @endforeach
@@ -122,10 +122,12 @@
                             <!-- Not -->
                             <div class="col-12">
                                 <label for="note" class="form-label">
-                                    <i class="bi bi-sticky me-1"></i>Not (Opsiyonel)
+                                    <i class="bi bi-sticky me-1"></i>Açıklama
                                 </label>
                                 <textarea class="form-control" id="note" name="note" rows="3" 
-                                          placeholder="Teslimat notu..."></textarea>
+                                          placeholder="Teslimat notu veya açıklama..."></textarea>
+                                <div class="form-text"></div>
+                                <div class="invalid-feedback"></div>
                             </div>
 
                             <!-- Mevcut Stok Bilgisi -->
@@ -246,15 +248,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Form geçerliliğini kontrol et
     function checkFormValid() {
+        const customerId = document.getElementById('customer_id').value;
+        const noteValue = document.getElementById('note').value.trim();
+        
         const isValid = productIdInput.value && 
-                       quantityInput.value && 
-                       document.getElementById('customer_id').value;
+                       quantityInput.value &&
+                       (customerId || noteValue); // Müşteri VEYA açıklama olmalı
+        
         submitBtn.disabled = !isValid;
+        
+        // Hata mesajları göster/gizle
+        const noteField = document.getElementById('note');
+        if (!customerId && !noteValue) {
+            noteField.classList.add('is-invalid');
+            noteField.nextElementSibling.nextElementSibling.textContent = 'Müşteri seçilmediğinde açıklama zorunludur';
+        } else {
+            noteField.classList.remove('is-invalid');
+        }
     }
 
     // Form elemanları değiştiğinde kontrol et
-    [quantityInput, document.getElementById('customer_id')].forEach(input => {
+    [quantityInput, document.getElementById('customer_id'), document.getElementById('note')].forEach(input => {
         input.addEventListener('change', checkFormValid);
+        input.addEventListener('input', checkFormValid);
     });
 
     // Kamera başlat
@@ -331,13 +347,18 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(`Maksimum ${currentProduct.current_stock} adet çıkış yapabilirsiniz!`);
             return;
         }
+
+        // Müşteri veya açıklama kontrolü
+        const customerId = document.getElementById('customer_id').value;
+        const noteValue = document.getElementById('note').value.trim();
+        if (!customerId && !noteValue) {
+            e.preventDefault();
+            alert('!');
+            return;
+        }
     });
 });
 
-// Başarı modal'ını kapat
-function closeSuccessModal() {
-    document.getElementById('successModal').style.display = 'none';
-}
 // Başarı modal'ını kapat
 function closeSuccessModal() {
     document.getElementById('successModal').style.display = 'none';
