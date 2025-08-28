@@ -263,15 +263,16 @@
                 </div>
             </div>
 
-            <!-- Barkod Önizleme -->
+            <!-- QR Kod Önizleme -->
             <div class="card mt-4">
                 <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-upc me-2"></i>Barkod Önizleme</h6>
+                    <h6 class="mb-0"><i class="bi bi-qr-code me-2"></i>QR Kod Önizleme</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div id="barcode_preview" class="border rounded p-3 bg-light">
-                        <span class="text-muted">Barkod buraya gelecek</span>
+                    <div id="qr_preview" class="border rounded p-3 bg-light">
+                        <span class="text-muted">QR kod buraya gelecek</span>
                     </div>
+                    <small class="text-muted mt-2 d-block">Bu QR kod barkod numarasını içerir</small>
                 </div>
             </div>
 
@@ -296,6 +297,19 @@
 @endsection
 
 @push('scripts')
+    <!-- Basit QR Code Generator -->
+    <script>
+        // Basit QR kod oluşturucu (Google Charts API kullanarak)
+        function generateQRCode(text, size = 150) {
+            const baseUrl = 'https://api.qrserver.com/v1/create-qr-code/';
+            const params = new URLSearchParams({
+                size: `${size}x${size}`,
+                data: text,
+                format: 'png'
+            });
+            return `${baseUrl}?${params}`;
+        }
+    </script>
     <script>
         // Resim önizleme
         document.getElementById('image').addEventListener('change', function(e) {
@@ -324,46 +338,34 @@
         function generateBarcode() {
             const barcode = '999' + Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
             document.getElementById('barcode').value = barcode;
-            updateBarcodePreview(barcode);
+            updateQRPreview(barcode);
         }
 
-        // Barkod önizleme
-        function updateBarcodePreview(barcode) {
-            const preview = document.getElementById('barcode_preview');
+        // QR kod önizleme
+        function updateQRPreview(barcode) {
+            const preview = document.getElementById('qr_preview');
             if (barcode && barcode.length > 0) {
+                const qrImageUrl = generateQRCode(barcode, 150);
                 preview.innerHTML = `
-                    <div class="font-monospace fw-bold fs-5">${barcode}</div>
-                    <div class="mt-2">
-                        <svg width="150" height="20">
-                            ${generateBarcodeLines(barcode)}
-                        </svg>
-                    </div>
+                    <div class="font-monospace fw-bold fs-6 mb-2">${barcode}</div>
+                    <img src="${qrImageUrl}" alt="QR Code" class="img-fluid border" style="max-width: 150px;" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="text-danger small" style="display: none;">QR kod yüklenemedi</div>
                 `;
             } else {
-                preview.innerHTML = '<span class="text-muted">Barkod buraya gelecek</span>';
+                preview.innerHTML = '<span class="text-muted">QR kod buraya gelecek</span>';
             }
-        }
-
-        // Basit barkod çizgileri (görsel amaçlı)
-        function generateBarcodeLines(barcode) {
-            let lines = '';
-            for (let i = 0; i < barcode.length; i++) {
-                const x = i * 10 + 10;
-                const height = parseInt(barcode[i]) + 10;
-                lines += `<rect x="${x}" y="0" width="8" height="${height}" fill="#000"/>`;
-            }
-            return lines;
         }
 
         // Barkod input değiştiğinde önizlemeyi güncelle
         document.getElementById('barcode').addEventListener('input', function(e) {
-            updateBarcodePreview(e.target.value);
+            updateQRPreview(e.target.value);
         });
 
         // Sayfa yüklendiğinde hesaplamaları yap
         document.addEventListener('DOMContentLoaded', function() {
             calculatePriceWithTax();
-            updateBarcodePreview(document.getElementById('barcode').value);
+            updateQRPreview(document.getElementById('barcode').value);
         });
     </script>
 @endpush 
