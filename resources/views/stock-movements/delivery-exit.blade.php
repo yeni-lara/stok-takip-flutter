@@ -49,8 +49,8 @@
                                         <i class="bi bi-qr-code-scan me-2"></i>Barkod Okuyucu
                                     </h5>
                                     <p class="text-muted">Ürün barkodunu kamera ile okutun</p>
-                                    <div id="barcode-scanner" style="max-width: 400px; margin: 0 auto;">
-                                        <video id="video" style="width: 100%; height: 300px; border: 2px dashed #ffc107; border-radius: 8px;"></video>
+                                    <div id="barcode-scanner" style="max-width: 500px; margin: 0 auto;">
+                                        <video id="video" style="width: 100%; height: 350px; border: 2px dashed #ffc107; border-radius: 8px; object-fit: cover; background: #000;"></video>
                                     </div>
                                     <div class="mt-3">
                                         <button type="button" id="start-scan" class="btn btn-warning">
@@ -59,6 +59,7 @@
                                         <button type="button" id="stop-scan" class="btn btn-secondary" style="display: none;">
                                             <i class="bi bi-stop-circle me-2"></i>Kamerayı Durdur
                                         </button>
+                                        <div id="camera-status" class="mt-2 text-sm"></div>
                                     </div>
                                     <div class="mt-2">
                                         <small class="text-muted">Alternatif olarak barkod numarasını manuel girebilirsiniz</small>
@@ -172,6 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const startScanBtn = document.getElementById('start-scan');
     const stopScanBtn = document.getElementById('stop-scan');
     const video = document.getElementById('video');
+    const cameraStatus = document.getElementById('camera-status');
     
     let isScanning = false;
     let currentProduct = null;
@@ -289,47 +291,145 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Barkod tarayıcı başlat
     function startBarcodeScanner() {
-        Quagga.init({
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: video,
-                constraints: {
-                    width: 400,
-                    height: 300,
-                    facingMode: "environment"
+        // Önce kamera izni kontrol et
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Bu tarayıcı kamera erişimini desteklemiyor!');
+            cameraStatus.innerHTML = '<span class="text-danger">❌ Tarayıcı desteklenmiyor</span>';
+            return;
+        }
+
+        // HTTPS kontrolü
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            alert('Kamera erişimi için HTTPS gereklidir!');
+            cameraStatus.innerHTML = '<span class="text-warning">⚠️ HTTPS gerekli</span>';
+            return;
+        }
+
+        cameraStatus.innerHTML = '<span class="text-info">📷 Kamera erişimi isteniyor...</span>';
+
+        // Önce kamera iznini al
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: "environment",
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            } 
+        })
+        .then(function(stream) {
+            // Kamera erişimi başarılı, şimdi Quagga'yı başlat
+            video.srcObject = stream;
+            video.play();
+
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: video,
+                    constraints: {
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 },
+                        facingMode: "environment"
+                    }
+                },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
+                },
+                numOfWorkers: 2,
+                frequency: 10,
+                decoder: {
+                    readers: [
+                        "code_128_reader",
+                        "ean_reader", 
+                        "ean_8_reader",
+                        "code_39_reader",
+                        "code_39_vin_reader",
+                        "codabar_reader",
+                        "upc_reader",
+                        "upc_e_reader"
+                    ]
+                },
+                locate: true
+            }, function(err) {
+                if (err) {
+                    console.error('Quagga init error:', err);
+                    alert('Barkod tarayıcı başlatılamadı: ' + err.message);
+                    // Stream'i kapat
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                    return;
                 }
-            },
-            decoder: {
-                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader"]
+                
+                console.log('Quagga başarıyla başlatıldı');
+                Quagga.start();
+                isScanning = true;
+                startScanBtn.style.display = 'none';
+                stopScanBtn.style.display = 'inline-block';
+                startScanBtn.textContent = 'Tarama Aktif...';
+                cameraStatus.innerHTML = '<span class="text-success">✅ Tarama aktif - Barkodu okutun</span>';
+            });
+        })
+        .catch(function(err) {
+            console.error('Camera access error:', err);
+            let errorMessage = 'Kamera erişimi başarısız: ';
+            
+            switch(err.name) {
+                case 'NotAllowedError':
+                    errorMessage += 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini etkinleştirin.';
+                    break;
+                case 'NotFoundError':
+                    errorMessage += 'Kamera bulunamadı.';
+                    break;
+                case 'NotReadableError':
+                    errorMessage += 'Kamera başka bir uygulama tarafından kullanılıyor.';
+                    break;
+                default:
+                    errorMessage += err.message;
             }
-        }, function(err) {
-            if (err) {
-                alert('Kamera erişimi başarısız: ' + err);
-                return;
-            }
-            Quagga.start();
-            isScanning = true;
-            startScanBtn.style.display = 'none';
-            stopScanBtn.style.display = 'inline-block';
+            
+            alert(errorMessage);
+            cameraStatus.innerHTML = '<span class="text-danger">❌ ' + errorMessage + '</span>';
         });
 
         // Barkod tespit edildiğinde
         Quagga.onDetected(function(data) {
-            const barcode = data.codeResult.code;
-            barcodeInput.value = barcode;
-            fetchProductByBarcode(barcode);
-            stopBarcodeScanner();
+            if (data && data.codeResult && data.codeResult.code) {
+                const barcode = data.codeResult.code;
+                console.log('Barkod tespit edildi:', barcode);
+                
+                // Tekrarlanan okumaları önle
+                if (barcode.length >= 8) {
+                    barcodeInput.value = barcode;
+                    fetchProductByBarcode(barcode);
+                    stopBarcodeScanner();
+                }
+            }
         });
     }
 
     // Barkod tarayıcı durdur
     function stopBarcodeScanner() {
         if (isScanning) {
-            Quagga.stop();
-            isScanning = false;
-            startScanBtn.style.display = 'inline-block';
-            stopScanBtn.style.display = 'none';
+            try {
+                Quagga.stop();
+                
+                // Video stream'i durdur
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+                
+                isScanning = false;
+                startScanBtn.style.display = 'inline-block';
+                stopScanBtn.style.display = 'none';
+                startScanBtn.textContent = 'Kamerayı Başlat';
+                cameraStatus.innerHTML = '<span class="text-secondary">⏹️ Tarama durduruldu</span>';
+                
+                console.log('Barkod tarayıcı durduruldu');
+            } catch (error) {
+                console.error('Scanner durdurma hatası:', error);
+            }
         }
     }
 
