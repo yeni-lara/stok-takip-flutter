@@ -10,7 +10,7 @@
                 </h1>
                 <div>
                     <button type="button" class="btn btn-success me-2" id="qr-print-btn">
-                        <i class="bi bi-qr-code me-1"></i>QR Çıktısı Al
+                        <i class="bi bi-qr-code me-1"></i>QR Çıktısı Al (<span id="selected-count">Tümü</span>)
                     </button>
                     <a href="{{ route('products.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-circle me-1"></i>Yeni Ürün
@@ -115,6 +115,9 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
+                                        <th width="40">
+                                            <input type="checkbox" id="selectAll" class="form-check-input">
+                                        </th>
                                         <th>Resim</th>
                                         <th>Ürün Bilgileri</th>
                                         <th>Kategori</th>
@@ -127,6 +130,9 @@
                                 <tbody>
                                     @foreach($products as $product)
                                         <tr>
+                                            <td>
+                                                <input type="checkbox" class="form-check-input product-checkbox" value="{{ $product->id }}" data-barcode="{{ $product->barcode }}" data-name="{{ $product->name }}">
+                                            </td>
                                             <td>
                                                 <img src="{{ $product->image_url }}" 
                                                      alt="{{ $product->name }}" 
@@ -262,6 +268,40 @@
 
 @push('scripts')
     <script>
+        // Checkbox işlevselliği
+        const selectAll = document.getElementById('selectAll');
+        const productCheckboxes = document.querySelectorAll('.product-checkbox');
+        const selectedCountSpan = document.getElementById('selected-count');
+
+        // Tümünü seç/bırak
+        selectAll.addEventListener('change', function() {
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+
+        // Her checkbox değişiminde sayacı güncelle
+        productCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateSelectedCount();
+                
+                // Tümü seçili checkbox durumunu güncelle
+                const checkedCount = document.querySelectorAll('.product-checkbox:checked').length;
+                selectAll.checked = checkedCount === productCheckboxes.length;
+                selectAll.indeterminate = checkedCount > 0 && checkedCount < productCheckboxes.length;
+            });
+        });
+
+        function updateSelectedCount() {
+            const checkedCount = document.querySelectorAll('.product-checkbox:checked').length;
+            if (checkedCount === 0) {
+                selectedCountSpan.textContent = 'Tümü';
+            } else {
+                selectedCountSpan.textContent = `${checkedCount} Seçili`;
+            }
+        }
+
         // QR Çıktısı Al butonu
         document.getElementById('qr-print-btn').addEventListener('click', function() {
             generateQRPrintPage();
@@ -286,9 +326,22 @@
                 btn.disabled = true;
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Hazırlanıyor...';
                 
-                // Aktif ürünleri al (API'den)
-                const response = await fetch('/api/products');
-                const products = await response.json();
+                // Seçili ürünleri kontrol et
+                const selectedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+                let products = [];
+                
+                if (selectedCheckboxes.length > 0) {
+                    // Seçili ürünlerden veri topla
+                    products = Array.from(selectedCheckboxes).map(checkbox => ({
+                        id: checkbox.value,
+                        name: checkbox.dataset.name,
+                        barcode: checkbox.dataset.barcode
+                    }));
+                } else {
+                    // Hiç seçili değilse API'den tümünü al
+                    const response = await fetch('/api/products');
+                    products = await response.json();
+                }
                 
                 if (products.length === 0) {
                     alert('Hiç ürün bulunamadı!');
