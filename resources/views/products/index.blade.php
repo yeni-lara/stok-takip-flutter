@@ -8,9 +8,14 @@
                 <h1 class="h3 mb-0">
                     <i class="bi bi-box me-2"></i>Ürünler
                 </h1>
-                <a href="{{ route('products.create') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i>Yeni Ürün
-                </a>
+                <div>
+                    <button type="button" class="btn btn-success me-2" id="qr-print-btn">
+                        <i class="bi bi-qr-code me-1"></i>QR Çıktısı Al
+                    </button>
+                    <a href="{{ route('products.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Yeni Ürün
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -257,6 +262,170 @@
 
 @push('scripts')
     <script>
+        // QR Çıktısı Al butonu
+        document.getElementById('qr-print-btn').addEventListener('click', function() {
+            generateQRPrintPage();
+        });
+
+        // QR kod oluşturma fonksiyonu (API kullanarak)
+        function generateQRCode(text, size = 100) {
+            const baseUrl = 'https://api.qrserver.com/v1/create-qr-code/';
+            const params = new URLSearchParams({
+                size: `${size}x${size}`,
+                data: text,
+                format: 'png'
+            });
+            return `${baseUrl}?${params}`;
+        }
+
+        async function generateQRPrintPage() {
+            const btn = document.getElementById('qr-print-btn');
+            const originalText = btn.innerHTML;
+            
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Hazırlanıyor...';
+                
+                // Aktif ürünleri al (API'den)
+                const response = await fetch('/api/products');
+                const products = await response.json();
+                
+                if (products.length === 0) {
+                    alert('Hiç ürün bulunamadı!');
+                    return;
+                }
+                
+                // Yeni pencere aç
+                const printWindow = window.open('', '_blank');
+                let htmlContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>QR Kod Çıktısı</title>
+                        <style>
+                            @page {
+                                margin: 10mm;
+                                size: A4;
+                            }
+                            body {
+                                font-family: Arial, sans-serif;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .qr-grid {
+                                display: grid;
+                                grid-template-columns: repeat(2, 1fr);
+                                gap: 2mm;
+                                page-break-inside: avoid;
+                                margin-bottom: 3mm;
+                            }
+                            .qr-item {
+                                border: 1px dashed #ccc;
+                                padding: 3mm;
+                                height: 45mm;
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                page-break-inside: avoid;
+                            }
+                            .qr-code {
+                                flex: 0 0 auto;
+                                margin-right: 6mm;
+                            }
+                            .qr-info {
+                                flex: 1;
+                                text-align: left;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                padding-left: 3mm;
+                            }
+                            .product-name {
+                                font-size: 10px;
+                                font-weight: bold;
+                                margin-bottom: 2mm;
+                                word-wrap: break-word;
+                                line-height: 1.3;
+                            }
+                            .barcode-text {
+                                font-family: monospace;
+                                font-size: 9px;
+                                margin-top: 1mm;
+                            }
+                            .page-break {
+                                page-break-before: always;
+                            }
+                            @media print {
+                                .no-print { display: none; }
+                            }
+
+                            .print-controls {
+                                position: fixed;
+                                top: 10px;
+                                right: 10px;
+                                background: white;
+                                padding: 10px;
+                                border: 1px solid #ddd;
+                                border-radius: 5px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="print-controls no-print">
+                            <button onclick="window.print()" style="margin-right: 10px;">🖨️ Yazdır</button>
+                            <button onclick="window.close()">❌ Kapat</button>
+                        </div>
+                        
+
+                `;
+                
+                // Her sayfa için 10'lu gruplar halinde QR kodları oluştur
+                for (let i = 0; i < products.length; i += 10) {
+                    if (i > 0) {
+                        htmlContent += '<div class="page-break"></div>';
+                    }
+                    
+                    htmlContent += '<div class="qr-grid">';
+                    
+                    const pageProducts = products.slice(i, i + 10);
+                    for (const product of pageProducts) {
+                        const qrImageUrl = product.barcode ? generateQRCode(product.barcode, 130) : '';
+                        htmlContent += `
+                            <div class="qr-item">
+                                <div class="qr-code">
+                                    ${product.barcode ? 
+                                        `<img src="${qrImageUrl}" alt="QR Code" style="width: 130px; height: 130px;">` : 
+                                        '<div style="width: 130px; height: 130px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 9px;">Barkod Yok</div>'
+                                    }
+                                </div>
+                                <div class="qr-info">
+                                    <div class="product-name">${product.name}</div>
+                                    <div class="barcode-text">${product.barcode || 'Barkod Yok'}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    htmlContent += '</div>';
+                }
+                
+                htmlContent += `
+                    </body>
+                    </html>
+                `;
+                
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+                
+            } catch (error) {
+                console.error('QR çıktısı oluşturma hatası:', error);
+                alert('QR çıktısı oluşturulurken hata oluştu: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
         // Barkod okuyucu (gelecekte mobil entegrasyon için)
         document.addEventListener('keydown', function(e) {
             // Ctrl+B ile barkod arama modalı açılabilir

@@ -74,6 +74,7 @@ Route::get('/dashboard', function () {
     Route::prefix('api')->group(function () {
         Route::get('/products/search', [ProductController::class, 'search'])->name('api.products.search');
         Route::get('/products/barcode/{barcode}', [ProductController::class, 'findByBarcode'])->name('api.products.barcode');
+        Route::get('/products', [ProductController::class, 'api'])->name('api.products');
     });
 });
 

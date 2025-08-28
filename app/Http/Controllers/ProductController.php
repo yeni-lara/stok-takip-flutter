@@ -298,6 +298,21 @@ class ProductController extends Controller
     }
 
     /**
+     * Tüm ürünleri listele (API)
+     */
+    public function api(Request $request)
+    {
+        $products = Product::active()
+            ->with(['category'])
+            ->select(['id', 'name', 'barcode', 'current_stock', 'category_id'])
+            ->orderBy('name')
+            ->limit(50) // Performans için limit
+            ->get();
+
+        return response()->json($products);
+    }
+
+    /**
      * Barkod oluştur
      */
     private function generateBarcode()
