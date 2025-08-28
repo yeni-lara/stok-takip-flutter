@@ -95,7 +95,9 @@ Route::get('/test-barcode/{barcode}', function ($barcode) {
         'barcode' => $product->barcode,
         'current_stock' => $product->current_stock,
         'category' => $product->category->name ?? null,
-        'unit_price' => $product->unit_price
+        'unit_price' => $product->unit_price,
+        'image_path' => $product->image_path,
+        'image_url' => $product->image_url
     ]);
 })->middleware('auth');
 

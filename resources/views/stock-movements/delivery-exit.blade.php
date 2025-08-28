@@ -49,8 +49,8 @@
                                         <i class="bi bi-qr-code-scan me-2"></i>Barkod Okuyucu
                                     </h5>
                                     <p class="text-muted">Ürün barkodunu kamera ile okutun</p>
-                                    <div id="barcode-scanner" style="max-width: 500px; margin: 0 auto;">
-                                        <video id="video" style="width: 100%; height: 350px; border: 2px dashed #ffc107; border-radius: 8px; object-fit: cover; background: #000;"></video>
+                                    <div id="barcode-scanner" style="max-width: 400px; margin: 0 auto;">
+                                        <div id="video" style="width: 400px; height: 400px; border: 2px dashed #ffc107; border-radius: 8px; background: #000; margin: 0 auto; overflow: hidden; position: relative;"></div>
                                     </div>
                                     <div class="mt-3">
                                         <button type="button" id="start-scan" class="btn btn-warning">
@@ -90,8 +90,16 @@
                                 <label class="form-label">
                                     <i class="bi bi-box-seam me-1"></i>Seçili Ürün
                                 </label>
-                                <div id="product-info" class="form-control form-control-lg bg-light">
-                                    <span class="text-muted">Barkod okutarak ürün seçin</span>
+                                <div id="product-info" class="form-control form-control-lg bg-light" style="min-height: 120px;">
+                                    <div class="d-flex align-items-center">
+                                        <div id="product-image" style="width: 80px; height: 80px; margin-right: 15px; display: none;">
+                                            <img id="product-img" src="" alt="Ürün Resmi" 
+                                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                                        </div>
+                                        <div id="product-details" class="flex-grow-1">
+                                            <span class="text-muted">Barkod okutarak ürün seçin</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <input type="hidden" name="product_id" id="product_id">
                             </div>
@@ -158,8 +166,8 @@
     </div>
 </div>
 
-<!-- QuaggaJS for Barcode Scanning -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<!-- Html5Qrcode for QR and Barcode Scanning -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -177,13 +185,32 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let isScanning = false;
     let currentProduct = null;
+    let html5QrCode = null;
 
     // Barkod değiştiğinde ürün bilgisini getir
     barcodeInput.addEventListener('input', function() {
         if (this.value.length >= 8) { // Minimum barkod uzunluğu
             fetchProductByBarcode(this.value);
+        } else if (this.value.length === 0) {
+            clearProductInfo();
         }
     });
+
+    // Ürün bilgilerini temizle
+    function clearProductInfo() {
+        currentProduct = null;
+        productIdInput.value = '';
+        
+        const productImageElement = document.getElementById('product-image');
+        const productDetailsElement = document.getElementById('product-details');
+        
+        productImageElement.style.display = 'none';
+        productDetailsElement.innerHTML = '<span class="text-muted">Barkod okutarak ürün seçin</span>';
+        
+        stockInfo.style.display = 'none';
+        quantityInput.value = '';
+        quantityInput.max = '';
+    }
 
     // Ürün bilgisi getir
     async function fetchProductByBarcode(barcode) {
@@ -215,14 +242,43 @@ document.addEventListener('DOMContentLoaded', function() {
         currentProduct = product;
         productIdInput.value = product.id;
         console.log('Product ID set to:', product.id);
-        productInfo.innerHTML = `
-            <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                    <strong>${product.name}</strong><br>
-                    <small class="text-muted">${product.category || 'Kategori yok'}</small>
+        
+        // Ürün resmi için URL oluştur
+        let productImage = '/images/no-image.svg';
+        
+        if (product.image_url) {
+            productImage = product.image_url;
+        } else if (product.image_path && product.image_path.trim() !== '') {
+            productImage = product.image_path.startsWith('http') 
+                ? product.image_path 
+                : '/' + product.image_path.replace(/^\/+/, '');
+        }
+        
+        console.log('Product image path:', product.image_path);
+        console.log('Product image URL:', product.image_url);
+        console.log('Final image URL:', productImage);
+        
+        const productImageElement = document.getElementById('product-image');
+        const productImgElement = document.getElementById('product-img');
+        const productDetailsElement = document.getElementById('product-details');
+        
+        // Resmi güncelle
+        productImgElement.src = productImage;
+        productImgElement.onerror = function() {
+            this.src = '/images/no-image.svg';
+        };
+        productImageElement.style.display = 'block';
+        
+        // Ürün detaylarını güncelle
+        productDetailsElement.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <strong style="font-size: 16px;">${product.name}</strong><br>
+                    <small class="text-muted">${product.category || 'Kategori yok'}</small><br>
+                    <small class="text-info">Barkod: ${product.barcode || 'Yok'}</small>
                 </div>
                 <div class="text-end">
-                    <span class="badge bg-primary">${product.current_stock} adet</span>
+                    <span class="badge bg-primary fs-6">${product.current_stock} adet</span>
                 </div>
             </div>
         `;
@@ -289,147 +345,143 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Barkod tarayıcı başlat
+    // QR/Barkod tarayıcı başlat
     function startBarcodeScanner() {
-        // Önce kamera izni kontrol et
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert('Bu tarayıcı kamera erişimini desteklemiyor!');
+        // Html5Qrcode desteği kontrolü
+        if (!Html5Qrcode.getCameras) {
+            alert('Tarayıcınız QR/barkod taramayı desteklemiyor!');
             cameraStatus.innerHTML = '<span class="text-danger">❌ Tarayıcı desteklenmiyor</span>';
             return;
         }
 
-        // HTTPS kontrolü
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            alert('Kamera erişimi için HTTPS gereklidir!');
-            cameraStatus.innerHTML = '<span class="text-warning">⚠️ HTTPS gerekli</span>';
+        cameraStatus.innerHTML = '<span class="text-info">📷 Kamera başlatılıyor...</span>';
+
+        // Video div'inin var olduğunu kontrol et
+        const videoElement = document.getElementById('video');
+        if (!videoElement) {
+            alert('Video elementi bulunamadı!');
+            cameraStatus.innerHTML = '<span class="text-danger">❌ Video elementi bulunamadı</span>';
             return;
         }
 
-        cameraStatus.innerHTML = '<span class="text-info">📷 Kamera erişimi isteniyor...</span>';
+        // Html5Qrcode instance oluştur
+        html5QrCode = new Html5Qrcode("video");
 
-        // Önce kamera iznini al
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: "environment",
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            } 
-        })
-        .then(function(stream) {
-            // Kamera erişimi başarılı, şimdi Quagga'yı başlat
-            video.srcObject = stream;
-            video.play();
-
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: video,
-                    constraints: {
-                        width: { min: 640, ideal: 1280, max: 1920 },
-                        height: { min: 480, ideal: 720, max: 1080 },
-                        facingMode: "environment"
-                    }
-                },
-                locator: {
-                    patchSize: "medium",
-                    halfSample: true
-                },
-                numOfWorkers: 2,
-                frequency: 10,
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader", 
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader"
-                    ]
-                },
-                locate: true
-            }, function(err) {
-                if (err) {
-                    console.error('Quagga init error:', err);
-                    alert('Barkod tarayıcı başlatılamadı: ' + err.message);
-                    // Stream'i kapat
-                    if (stream) {
-                        stream.getTracks().forEach(track => track.stop());
-                    }
-                    return;
-                }
-                
-                console.log('Quagga başarıyla başlatıldı');
-                Quagga.start();
-                isScanning = true;
-                startScanBtn.style.display = 'none';
-                stopScanBtn.style.display = 'inline-block';
-                startScanBtn.textContent = 'Tarama Aktif...';
-                cameraStatus.innerHTML = '<span class="text-success">✅ Tarama aktif - Barkodu okutun</span>';
-            });
-        })
-        .catch(function(err) {
-            console.error('Camera access error:', err);
-            let errorMessage = 'Kamera erişimi başarısız: ';
-            
-            switch(err.name) {
-                case 'NotAllowedError':
-                    errorMessage += 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini etkinleştirin.';
-                    break;
-                case 'NotFoundError':
-                    errorMessage += 'Kamera bulunamadı.';
-                    break;
-                case 'NotReadableError':
-                    errorMessage += 'Kamera başka bir uygulama tarafından kullanılıyor.';
-                    break;
-                default:
-                    errorMessage += err.message;
+        const config = {
+            fps: 20,
+            qrbox: { width: 300, height: 300 },
+            aspectRatio: 1.0,
+            supportedScanTypes: [
+                Html5QrcodeScanType.SCAN_TYPE_CAMERA
+            ],
+            rememberLastUsedCamera: true,
+            showTorchButtonIfSupported: true,
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
             }
-            
-            alert(errorMessage);
-            cameraStatus.innerHTML = '<span class="text-danger">❌ ' + errorMessage + '</span>';
-        });
+        };
 
-        // Barkod tespit edildiğinde
-        Quagga.onDetected(function(data) {
-            if (data && data.codeResult && data.codeResult.code) {
-                const barcode = data.codeResult.code;
-                console.log('Barkod tespit edildi:', barcode);
+        // Kamera listesini al ve başlat
+        Html5Qrcode.getCameras().then(devices => {
+            if (devices && devices.length) {
+                console.log('Bulunan kameralar:', devices);
                 
-                // Tekrarlanan okumaları önle
-                if (barcode.length >= 8) {
-                    barcodeInput.value = barcode;
-                    fetchProductByBarcode(barcode);
-                    stopBarcodeScanner();
+                // Arka kamerayı tercih et
+                let cameraId = devices[0].id;
+                
+                // Arka kamera ara (environment facing)
+                for (let device of devices) {
+                    if (device.label && 
+                        (device.label.toLowerCase().includes('back') || 
+                         device.label.toLowerCase().includes('environment') ||
+                         device.label.toLowerCase().includes('rear'))) {
+                        cameraId = device.id;
+                        console.log('Arka kamera seçildi:', device.label);
+                        break;
+                    }
                 }
+
+                // Kamera kısıtları
+                const cameraConfig = {
+                    ...config,
+                    videoConstraints: {
+                        facingMode: "environment",
+                        width: { ideal: 400 },
+                        height: { ideal: 400 }
+                    }
+                };
+
+                // Taramayı başlat
+                html5QrCode.start(
+                    cameraId,
+                    cameraConfig,
+                    (decodedText, decodedResult) => {
+                        // Başarılı tarama - QR kod veya barkod
+                        console.log('QR/Barkod tespit edildi:', decodedText);
+                        
+                        if (decodedText && decodedText.trim().length >= 3) {
+                            barcodeInput.value = decodedText.trim();
+                            fetchProductByBarcode(decodedText.trim());
+                            stopBarcodeScanner();
+                        }
+                    },
+                    (error) => {
+                        // Tarama hatası (normal, sürekli çalışır)
+                        // console.log('Scan error:', error);
+                    }
+                ).then(() => {
+                    isScanning = true;
+                    startScanBtn.style.display = 'none';
+                    stopScanBtn.style.display = 'inline-block';
+                    cameraStatus.innerHTML = '<span class="text-success">✅ Tarama aktif - QR/Barkodu okutun</span>';
+                    console.log('QR/Barkod tarayıcı başarıyla başlatıldı');
+                }).catch(err => {
+                    console.error('Kamera başlatma hatası:', err);
+                    console.error('Hata detayları:', {
+                        name: err.name,
+                        message: err.message,
+                        stack: err.stack
+                    });
+                    
+                    let errorMessage = 'Kamera erişimi başarısız: ';
+                    
+                    if (err.name === 'NotAllowedError') {
+                        errorMessage += 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini etkinleştirin.';
+                    } else if (err.name === 'NotFoundError') {
+                        errorMessage += 'Kamera bulunamadı.';
+                    } else if (err.name === 'NotReadableError') {
+                        errorMessage += 'Kamera başka bir uygulama tarafından kullanılıyor.';
+                    } else {
+                        errorMessage += err.message;
+                    }
+                    
+                    alert(errorMessage);
+                    cameraStatus.innerHTML = '<span class="text-danger">❌ ' + errorMessage + '</span>';
+                });
+            } else {
+                alert('Hiç kamera bulunamadı!');
+                cameraStatus.innerHTML = '<span class="text-danger">❌ Kamera bulunamadı</span>';
             }
+        }).catch(err => {
+            console.error('Kamera listesi alınamadı:', err);
+            alert('Kamera listesi alınamadı: ' + err.message);
+            cameraStatus.innerHTML = '<span class="text-danger">❌ Kamera hatası</span>';
         });
     }
 
-    // Barkod tarayıcı durdur
+    // QR/Barkod tarayıcı durdur
     function stopBarcodeScanner() {
-        if (isScanning) {
-            try {
-                Quagga.stop();
-                
-                // Video stream'i durdur
-                if (video.srcObject) {
-                    video.srcObject.getTracks().forEach(track => track.stop());
-                    video.srcObject = null;
-                }
-                
+        if (isScanning && html5QrCode) {
+            html5QrCode.stop().then(() => {
                 isScanning = false;
                 startScanBtn.style.display = 'inline-block';
                 stopScanBtn.style.display = 'none';
                 startScanBtn.textContent = 'Kamerayı Başlat';
                 cameraStatus.innerHTML = '<span class="text-secondary">⏹️ Tarama durduruldu</span>';
-                
-                console.log('Barkod tarayıcı durduruldu');
-            } catch (error) {
-                console.error('Scanner durdurma hatası:', error);
-            }
+                console.log('QR/Barkod tarayıcı durduruldu');
+            }).catch(err => {
+                console.error('Scanner durdurma hatası:', err);
+            });
         }
     }
 
