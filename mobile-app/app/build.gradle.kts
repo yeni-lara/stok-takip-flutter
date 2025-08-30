@@ -47,8 +47,11 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.3.1")
     implementation("androidx.camera:camera-view:1.3.1")
     
-    // ML Kit Barcode Scanning
-    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+                    // ML Kit Barcode Scanning
+                implementation("com.google.mlkit:barcode-scanning:17.2.0")
+
+                // OkHttp for HTTP requests
+                implementation("com.squareup.okhttp3:okhttp:4.12.0")
     
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
