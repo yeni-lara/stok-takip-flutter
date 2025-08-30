@@ -324,7 +324,7 @@ class StockExitActivity : AppCompatActivity() {
 
                 private fun fetchCustomersFromAPI() {
                     // API endpoint
-                    val url = "${Config.BASE_URL}/api/customers"
+                    val url = Config.API_CUSTOMERS
                     
                     // HTTP request
                     val request = Request.Builder()
