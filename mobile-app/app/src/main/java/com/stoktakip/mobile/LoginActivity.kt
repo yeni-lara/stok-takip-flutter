@@ -26,6 +26,13 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Oturum kontrolü - eğer zaten giriş yapılmışsa MainActivity'ye yönlendir
+        if (isUserLoggedIn()) {
+            redirectToMainActivity()
+            return
+        }
+        
         setContentView(R.layout.activity_login)
 
         // Action bar'ı özelleştir
@@ -34,9 +41,9 @@ class LoginActivity : AppCompatActivity() {
             setBackgroundDrawable(ContextCompat.getDrawable(this@LoginActivity, R.color.black))
         }
 
-                            findViews()
-                    setupClickListeners()
-                    setupProgressBar()
+        findViews()
+        setupClickListeners()
+        setupProgressBar()
     }
 
                     private fun findViews() {
@@ -156,5 +163,17 @@ class LoginActivity : AppCompatActivity() {
                 private fun saveAuthToken(token: String) {
                     val sharedPrefs = getSharedPreferences(Config.PREFS_NAME, Context.MODE_PRIVATE)
                     sharedPrefs.edit().putString(Config.KEY_AUTH_TOKEN, token).apply()
+                }
+
+                private fun isUserLoggedIn(): Boolean {
+                    val sharedPrefs = getSharedPreferences(Config.PREFS_NAME, Context.MODE_PRIVATE)
+                    val token = sharedPrefs.getString(Config.KEY_AUTH_TOKEN, null)
+                    return !token.isNullOrEmpty()
+                }
+
+                private fun redirectToMainActivity() {
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 }
 } 

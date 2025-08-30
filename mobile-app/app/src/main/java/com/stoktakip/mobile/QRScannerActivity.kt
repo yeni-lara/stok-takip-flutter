@@ -1,6 +1,7 @@
 package com.stoktakip.mobile
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -41,6 +42,13 @@ class QRScannerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Oturum kontrolü - eğer giriş yapılmamışsa LoginActivity'ye yönlendir
+        if (!isUserLoggedIn()) {
+            redirectToLoginActivity()
+            return
+        }
+        
         setContentView(R.layout.activity_qr_scanner)
 
         previewView = findViewById(R.id.viewFinder)
@@ -149,5 +157,18 @@ class QRScannerActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
+    }
+
+    private fun isUserLoggedIn(): Boolean {
+        val sharedPrefs = getSharedPreferences(Config.PREFS_NAME, Context.MODE_PRIVATE)
+        val token = sharedPrefs.getString(Config.KEY_AUTH_TOKEN, null)
+        return !token.isNullOrEmpty()
+    }
+
+    private fun redirectToLoginActivity() {
+        val intent = Intent(this@QRScannerActivity, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 } 

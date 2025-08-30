@@ -1,5 +1,6 @@
 package com.stoktakip.mobile
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
@@ -55,6 +56,13 @@ class StockReturnActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Oturum kontrolü - eğer giriş yapılmamışsa LoginActivity'ye yönlendir
+        if (!isUserLoggedIn()) {
+            redirectToLoginActivity()
+            return
+        }
+        
         setContentView(R.layout.activity_stock_return)
         
         // Action bar'ı özelleştir
@@ -585,5 +593,18 @@ class StockReturnActivity : AppCompatActivity() {
                 private fun findCustomerIdByName(customerName: String): Int? {
                     // Müşteri adından ID'yi map'ten bul
                     return customerIdMap[customerName]
+                }
+
+                private fun isUserLoggedIn(): Boolean {
+                    val sharedPrefs = getSharedPreferences(Config.PREFS_NAME, Context.MODE_PRIVATE)
+                    val token = sharedPrefs.getString(Config.KEY_AUTH_TOKEN, null)
+                    return !token.isNullOrEmpty()
+                }
+
+                private fun redirectToLoginActivity() {
+                    val intent = Intent(this@StockReturnActivity, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
                 }
             } 
