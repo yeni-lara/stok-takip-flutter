@@ -16,6 +16,7 @@
     <color name="dark_green">#388E3C</color>
     <color name="warning_orange">#FF9800</color>
     <color name="dark_orange">#F57C00</color>
+    <color name="red">#f44336</color>
     <color name="danger_red">#f44336</color>
     <color name="dark_red">#d32f2f</color>
     
