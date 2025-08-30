@@ -57,23 +57,102 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Barkod ile ürün getir
-Route::middleware('auth:sanctum')->get('/products/by-barcode/{barcode}', function ($barcode) {
-    $product = Product::with('category')
-        ->where('barcode', $barcode)
-        ->where('is_active', true)
-        ->first();
-    
-    if (!$product) {
-        return response()->json(['message' => 'Ürün bulunamadı'], 404);
-    }
-    
-    return response()->json([
-        'id' => $product->id,
-        'name' => $product->name,
-        'barcode' => $product->barcode,
-        'current_stock' => $product->current_stock,
-        'category' => $product->category->name ?? null,
-        'unit_price' => $product->unit_price
+// Barkod ile ürün getir (QR tarama için)
+Route::get('/products/by-barcode/{barcode}', function ($barcode) {
+    // Detaylı logging ekle
+    \Log::info('Barkod sorgulama API çağrıldı', [
+        'barkod' => $barcode,
+        'ip' => request()->ip(),
+        'user_agent' => request()->userAgent(),
+        'timestamp' => now()
     ]);
+
+    try {
+        $product = Product::with('category')
+            ->where('barcode', $barcode)
+            ->where('is_active', true)
+            ->first();
+        
+        if (!$product) {
+            \Log::warning('Ürün bulunamadı', ['barkod' => $barcode]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Ürün bulunamadı',
+                'barcode' => $barcode
+            ], 404);
+        }
+
+        \Log::info('Ürün bulundu', [
+            'barkod' => $barcode,
+            'product_id' => $product->id,
+            'product_name' => $product->name
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'barcode' => $product->barcode,
+                'current_stock' => $product->current_stock,
+                'category' => $product->category->name ?? null,
+                'unit_price' => $product->unit_price,
+                'description' => $product->description ?? null,
+                'image_path' => $product->image_path ?? null
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Barkod sorgulama hatası', [
+            'barkod' => $barcode,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Sunucu hatası oluştu',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Müşteri listesi getir
+Route::get('/customers', function () {
+    // Detaylı logging ekle
+    \Log::info('Müşteri listesi API çağrıldı', [
+        'ip' => request()->ip(),
+        'user_agent' => request()->userAgent(),
+        'timestamp' => now()
+    ]);
+
+    try {
+        // Müşteri tablosundan aktif müşterileri getir
+        $customers = \DB::table('customers')
+            ->where('is_active', true)
+            ->select('id', 'company_name')
+            ->orderBy('company_name', 'asc')
+            ->get();
+
+        \Log::info('Müşteri listesi başarıyla getirildi', [
+            'customer_count' => $customers->count()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'customers' => $customers
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Müşteri listesi hatası', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Müşteri listesi alınamadı',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 }); 
