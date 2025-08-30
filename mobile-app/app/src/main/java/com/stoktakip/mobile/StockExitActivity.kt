@@ -61,6 +61,9 @@ class StockExitActivity : AppCompatActivity() {
         
         // Click listener'ları ekle
         setupClickListeners()
+        
+        // Müşteri listesini API'den çek
+        setupCustomerSpinner()
     }
     
     private fun findViews() {
@@ -350,7 +353,7 @@ class StockExitActivity : AppCompatActivity() {
                                             
                                             for (i in 0 until customersArray.length()) {
                                                 val customer = customersArray.getJSONObject(i)
-                                                customerNames.add(customer.getString("name"))
+                                                customerNames.add(customer.getString("company_name"))
                                             }
                                             
                                             setupCustomerSpinnerWithData(customerNames.toTypedArray())
@@ -372,14 +375,50 @@ class StockExitActivity : AppCompatActivity() {
                 }
 
                 private fun setupCustomerSpinnerWithData(customers: Array<String>) {
-                    val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, customers)
+                    // Özel adapter oluştur - seçilen değerin görünür olması için
+                    val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, customers) {
+                        override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                            val view = super.getView(position, convertView, parent)
+                            val textView = view.findViewById<android.widget.TextView>(android.R.id.text1)
+                            textView.setTextColor(ContextCompat.getColor(this@StockExitActivity, R.color.white))
+                            return view
+                        }
+                        
+                        override fun getDropDownView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                            val view = super.getDropDownView(position, convertView, parent)
+                            val textView = view.findViewById<android.widget.TextView>(android.R.id.text1)
+                            textView.setTextColor(ContextCompat.getColor(this@StockExitActivity, R.color.black))
+                            return view
+                        }
+                    }
+                    
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinnerCustomer.adapter = adapter
+                    
+                    // Spinner seçim listener'ı ekle
+                    spinnerCustomer.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                            // Seçilen müşteriyi log'la (debug için)
+                            val selectedCustomer = customers[position]
+                            android.util.Log.d("StockExit", "Seçilen müşteri: $selectedCustomer")
+                        }
+                        
+                        override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {
+                            // Hiçbir şey seçilmediğinde
+                        }
+                    }
                 }
 
                 private fun setupEmptyCustomerSpinner() {
                     val emptyCustomers = arrayOf("Müşteri bulunamadı")
-                    val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, emptyCustomers)
+                    val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, emptyCustomers) {
+                        override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                            val view = super.getView(position, convertView, parent)
+                            val textView = view.findViewById<android.widget.TextView>(android.R.id.text1)
+                            textView.setTextColor(ContextCompat.getColor(this@StockExitActivity, R.color.white))
+                            return view
+                        }
+                    }
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinnerCustomer.adapter = adapter
                 }

@@ -61,6 +61,9 @@ class StockReturnActivity : AppCompatActivity() {
         
         // Click listener'ları ekle
         setupClickListeners()
+        
+        // Müşteri listesini API'den çek
+        setupCustomerSpinner()
     }
     
                     private fun findViews() {
@@ -302,5 +305,121 @@ class StockReturnActivity : AppCompatActivity() {
                         // Hata durumunda placeholder göster
                         productImage.setImageResource(R.drawable.ic_launcher_foreground)
                     }
+                }
+
+                private fun setupCustomerSpinner() {
+                    // API'den müşteri listesini çek
+                    fetchCustomersFromAPI()
+                }
+
+                private fun fetchCustomersFromAPI() {
+                    // API endpoint
+                    val url = "${Config.BASE_URL}/api/customers"
+                    
+                    // HTTP request
+                    val request = Request.Builder()
+                        .url(url)
+                        .get()
+                        .build()
+
+                    // HTTP client
+                    val client = OkHttpClient.Builder()
+                        .connectTimeout(Config.CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                        .readTimeout(Config.READ_TIMEOUT, TimeUnit.SECONDS)
+                        .build()
+
+                    client.newCall(request).enqueue(object : Callback {
+                        override fun onFailure(call: Call, e: IOException) {
+                            runOnUiThread {
+                                Toast.makeText(this@StockReturnActivity, "Müşteri listesi alınamadı: ${e.message}", Toast.LENGTH_LONG).show()
+                                // Hata durumunda boş liste göster
+                                setupEmptyCustomerSpinner()
+                            }
+                        }
+
+                        override fun onResponse(call: Call, response: Response) {
+                            val responseBody = response.body?.string()
+                            
+                            runOnUiThread {
+                                if (response.isSuccessful && responseBody != null) {
+                                    try {
+                                        val jsonObject = JSONObject(responseBody)
+                                        val success = jsonObject.getBoolean("success")
+                                        
+                                        if (success) {
+                                            val customersArray = jsonObject.getJSONArray("customers")
+                                            val customerNames = mutableListOf<String>()
+                                            customerNames.add("Müşteri Seçiniz")
+                                            
+                                            for (i in 0 until customersArray.length()) {
+                                                val customer = customersArray.getJSONObject(i)
+                                                customerNames.add(customer.getString("company_name"))
+                                            }
+                                            
+                                            setupCustomerSpinnerWithData(customerNames.toTypedArray())
+                                        } else {
+                                            Toast.makeText(this@StockReturnActivity, "Müşteri listesi alınamadı", Toast.LENGTH_LONG).show()
+                                            setupEmptyCustomerSpinner()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(this@StockReturnActivity, "Müşteri listesi işlenirken hata: ${e.message}", Toast.LENGTH_LONG).show()
+                                        setupEmptyCustomerSpinner()
+                                    }
+                                } else {
+                                    Toast.makeText(this@StockReturnActivity, "Müşteri listesi alınamadı", Toast.LENGTH_LONG).show()
+                                    setupEmptyCustomerSpinner()
+                                }
+                            }
+                        }
+                    })
+                }
+
+                private fun setupCustomerSpinnerWithData(customers: Array<String>) {
+                    // Özel adapter oluştur - seçilen değerin görünür olması için
+                    val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, customers) {
+                        override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                            val view = super.getView(position, convertView, parent)
+                            val textView = view.findViewById<android.widget.TextView>(android.R.id.text1)
+                            textView.setTextColor(ContextCompat.getColor(this@StockReturnActivity, R.color.white))
+                            return view
+                        }
+                        
+                        override fun getDropDownView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                            val view = super.getDropDownView(position, convertView, parent)
+                            val textView = view.findViewById<android.widget.TextView>(android.R.id.text1)
+                            textView.setTextColor(ContextCompat.getColor(this@StockReturnActivity, R.color.black))
+                            return view
+                        }
+                    }
+                    
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinnerCustomer.adapter = adapter
+                    
+                    // Spinner seçim listener'ı ekle
+                    spinnerCustomer.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                            // Seçilen müşteriyi log'la (debug için)
+                            val selectedCustomer = customers[position]
+                            android.util.Log.d("StockReturn", "Seçilen müşteri: $selectedCustomer")
+                        }
+                        
+                        override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {
+                            // Hiçbir şey seçilmediğinde
+                        }
+                    }
+                }
+
+                private fun setupEmptyCustomerSpinner() {
+                    val emptyCustomers = arrayOf("Müşteri bulunamadı")
+                    val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, emptyCustomers) {
+                        override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                            val view = super.getView(position, convertView, parent)
+                            val textView = view.findViewById<android.widget.TextView>(android.R.id.text1)
+                            textView.setTextColor(ContextCompat.getColor(this@StockReturnActivity, R.color.white))
+                            return view
+                        }
+                    }
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinnerCustomer.adapter = adapter
                 }
             } 

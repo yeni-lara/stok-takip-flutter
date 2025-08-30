@@ -205,7 +205,10 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:background="@drawable/edit_text_background"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:popupBackground="@color/white"
+            android:spinnerMode="dropdown"
+            android:textColor="@color/white" />
 
         <EditText
             android:id="@+id/etNotes"
