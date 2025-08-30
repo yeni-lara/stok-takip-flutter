@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">StokTakipMobile</string>
+    <string name="app_name">Kasabi\'Et Stok Takip</string>
+    <string name="main_title">Kasabi\'Et</string>
+    <string name="main_subtitle">Stok Takip Sistemi</string>
+    <string name="stock_exit">Stok Çıkış</string>
+    <string name="stock_return">Stok İade</string>
+    <string name="qr_scan">QR Kod Tara</string>
+    <string name="submit">Onayla</string>
+    <string name="clear">Temizle</string>
+    <string name="cancel">İptal</string>
+    <string name="ok">Tamam</string>
 </resources>

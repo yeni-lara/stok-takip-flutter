@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Başlık -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔄 Stok İade İşlemi"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="32dp" />
+
+        <!-- QR Tarama Bölümü -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="QR Kod Tarama"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnScanQR"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="📱 QR Kod Tara"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_secondary"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Form Bölümü -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="İade Bilgileri"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etProductCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ürün Kodu (QR'dan otomatik)"
+            android:textColor="@color/white"
+            android:textColorHint="@color/light_gray"
+            android:background="@drawable/edit_text_background"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:inputType="text"
+            android:enabled="false" />
+
+        <EditText
+            android:id="@+id/etQuantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="İade Miktarı"
+            android:textColor="@color/white"
+            android:textColorHint="@color/light_gray"
+            android:background="@drawable/edit_text_background"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/etReturnReason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="İade Sebebi"
+            android:textColor="@color/white"
+            android:textColorHint="@color/light_gray"
+            android:background="@drawable/edit_text_background"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/etNotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Notlar (Opsiyonel)"
+            android:textColor="@color/white"
+            android:textColorHint="@color/light_gray"
+            android:background="@drawable/edit_text_background"
+            android:padding="16dp"
+            android:layout_marginBottom="32dp"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:gravity="top" />
+
+        <!-- Butonlar -->
+        <Button
+            android:id="@+id/btnSubmit"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Stok İade Yap"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_warning"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Temizle"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_danger" />
+
+    </LinearLayout>
+
+</ScrollView> 
