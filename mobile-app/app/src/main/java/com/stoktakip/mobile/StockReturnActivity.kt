@@ -1,5 +1,6 @@
 package com.stoktakip.mobile
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -9,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
 class StockReturnActivity : AppCompatActivity() {
-    
+
     private lateinit var etProductCode: EditText
     private lateinit var etQuantity: EditText
     private lateinit var etReturnReason: EditText
@@ -17,6 +18,10 @@ class StockReturnActivity : AppCompatActivity() {
     private lateinit var btnScanQR: Button
     private lateinit var btnSubmit: Button
     private lateinit var btnClear: Button
+
+    companion object {
+        private const val QR_SCAN_REQUEST_CODE = 101
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,23 +64,10 @@ class StockReturnActivity : AppCompatActivity() {
         }
     }
     
-    private fun showQRScanDialog() {
-        val input = EditText(this)
-        input.hint = "QR kod veya ürün kodu girin"
-        
-        AlertDialog.Builder(this)
-            .setTitle("QR Kod Tarama")
-            .setMessage("İade edilecek ürün kodunu girin:")
-            .setView(input)
-            .setPositiveButton("Tamam") { _, _ ->
-                val code = input.text.toString()
-                if (code.isNotEmpty()) {
-                    etProductCode.setText(code)
-                    Toast.makeText(this, "Ürün kodu: $code", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("İptal", null)
-            .show()
+        private fun showQRScanDialog() {
+        // Gerçek kamera ile QR tarama
+        val intent = Intent(this, QRScannerActivity::class.java)
+        startActivityForResult(intent, QR_SCAN_REQUEST_CODE)
     }
     
     private fun validateAndSubmit() {
@@ -107,11 +99,23 @@ class StockReturnActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun clearForm() {
-        etProductCode.text.clear()
-        etQuantity.text.clear()
-        etReturnReason.text.clear()
-        etNotes.text.clear()
-        Toast.makeText(this, "Form temizlendi", Toast.LENGTH_SHORT).show()
-    }
-} 
+                    private fun clearForm() {
+                    etProductCode.text.clear()
+                    etQuantity.text.clear()
+                    etReturnReason.text.clear()
+                    etNotes.text.clear()
+                    Toast.makeText(this, "Form temizlendi", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+                    super.onActivityResult(requestCode, resultCode, data)
+                    
+                    if (requestCode == QR_SCAN_REQUEST_CODE && resultCode == RESULT_OK) {
+                        val scannedCode = data?.getStringExtra(QRScannerActivity.EXTRA_SCANNED_CODE)
+                        if (scannedCode != null) {
+                            etProductCode.setText(scannedCode.toString())
+                            Toast.makeText(this, "QR kod tarandı: $scannedCode", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } 

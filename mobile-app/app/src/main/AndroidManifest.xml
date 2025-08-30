@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Kamera izni -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -34,6 +39,11 @@
             
         <activity
             android:name=".StockReturnActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokTakipMobile" />
+            
+        <activity
+            android:name=".QRScannerActivity"
             android:exported="false"
             android:theme="@style/Theme.StokTakipMobile" />
     </application>
