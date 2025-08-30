@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -16,7 +17,7 @@ class StockReturnActivity : AppCompatActivity() {
 
                     private lateinit var etProductCode: EditText
                 private lateinit var etQuantity: EditText
-                private lateinit var etReturnReason: EditText
+                private lateinit var spinnerCustomer: Spinner
                 private lateinit var etNotes: EditText
                 private lateinit var btnScanQR: Button
                 private lateinit var btnSubmit: Button
@@ -56,7 +57,7 @@ class StockReturnActivity : AppCompatActivity() {
                     private fun findViews() {
                     etProductCode = findViewById(R.id.etProductCode)
                     etQuantity = findViewById(R.id.etQuantity)
-                    etReturnReason = findViewById(R.id.etReturnReason)
+                    spinnerCustomer = findViewById(R.id.spinnerCustomer)
                     etNotes = findViewById(R.id.etNotes)
                     btnScanQR = findViewById(R.id.btnScanQR)
                     btnSubmit = findViewById(R.id.btnSubmit)
@@ -96,7 +97,7 @@ class StockReturnActivity : AppCompatActivity() {
                     private fun validateAndSubmit() {
                     val productCode = etProductCode.text.toString()
                     val quantity = etQuantity.text.toString()
-                    val returnReason = etReturnReason.text.toString()
+                    val customer = spinnerCustomer.selectedItem?.toString() ?: ""
                     val notes = etNotes.text.toString()
 
                     // Validasyon kuralları (web sayfasındaki gibi)
@@ -110,9 +111,9 @@ class StockReturnActivity : AppCompatActivity() {
                         return
                     }
 
-                    // İade sebebi veya açıklama kontrolü (web sayfasındaki gibi)
-                    if (returnReason.isEmpty() && notes.isEmpty()) {
-                        Toast.makeText(this, "İade sebebi veya açıklama gerekli!", Toast.LENGTH_SHORT).show()
+                    // Müşteri veya açıklama kontrolü (web sayfasındaki gibi)
+                    if (customer.isEmpty() && notes.isEmpty()) {
+                        Toast.makeText(this, "Müşteri veya açıklama gerekli!", Toast.LENGTH_SHORT).show()
                         return
                     }
 
@@ -122,7 +123,7 @@ class StockReturnActivity : AppCompatActivity() {
                         .setMessage("""
                             Ürün Kodu: $productCode
                             Miktar: $quantity
-                            İade Sebebi: ${if (returnReason.isNotEmpty()) returnReason else "Belirtilmedi"}
+                            Müşteri: ${if (customer.isNotEmpty()) customer else "Belirtilmedi"}
                             Açıklama: ${if (notes.isNotEmpty()) notes else "Belirtilmedi"}
 
                             Onaylıyor musunuz?
@@ -139,7 +140,7 @@ class StockReturnActivity : AppCompatActivity() {
                     private fun clearForm() {
                     etProductCode.text.clear()
                     etQuantity.text.clear()
-                    etReturnReason.text.clear()
+                    spinnerCustomer.setSelection(0)
                     etNotes.text.clear()
                     Toast.makeText(this, "Form temizlendi", Toast.LENGTH_SHORT).show()
                 }

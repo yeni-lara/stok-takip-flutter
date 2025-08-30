@@ -192,18 +192,20 @@
             android:inputType="number"
             android:minHeight="60dp" />
 
-        <EditText
-            android:id="@+id/etCustomer"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Müşteri (Opsiyonel)"
+            android:text="Müşteri (Opsiyonel)"
             android:textColor="@color/white"
-            android:textColorHint="@color/light_gray"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spinnerCustomer"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
             android:background="@drawable/edit_text_background"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp"
-            android:inputType="text"
-            android:minHeight="60dp" />
+            android:layout_marginBottom="16dp" />
 
         <EditText
             android:id="@+id/etNotes"

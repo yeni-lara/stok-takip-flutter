@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -16,7 +17,7 @@ class StockExitActivity : AppCompatActivity() {
 
                     private lateinit var etProductCode: EditText
                 private lateinit var etQuantity: EditText
-                private lateinit var etCustomer: EditText
+                private lateinit var spinnerCustomer: Spinner
                 private lateinit var etNotes: EditText
                 private lateinit var btnScanQR: Button
                 private lateinit var btnSubmit: Button
@@ -54,10 +55,10 @@ class StockExitActivity : AppCompatActivity() {
     }
     
     private fun findViews() {
-        etProductCode = findViewById(R.id.etProductCode)
-        etQuantity = findViewById(R.id.etQuantity)
-        etCustomer = findViewById(R.id.etCustomer)
-        etNotes = findViewById(R.id.etNotes)
+                            etProductCode = findViewById(R.id.etProductCode)
+                    etQuantity = findViewById(R.id.etQuantity)
+                    spinnerCustomer = findViewById(R.id.spinnerCustomer)
+                    etNotes = findViewById(R.id.etNotes)
         btnScanQR = findViewById(R.id.btnScanQR)
         btnSubmit = findViewById(R.id.btnSubmit)
         btnClear = findViewById(R.id.btnClear)
@@ -96,7 +97,7 @@ class StockExitActivity : AppCompatActivity() {
                     private fun validateAndSubmit() {
                     val productCode = etProductCode.text.toString()
                     val quantity = etQuantity.text.toString()
-                    val customer = etCustomer.text.toString()
+                    val customer = spinnerCustomer.selectedItem?.toString() ?: ""
                     val notes = etNotes.text.toString()
 
                     // Validasyon kuralları (web sayfasındaki gibi)
@@ -139,7 +140,7 @@ class StockExitActivity : AppCompatActivity() {
                     private fun clearForm() {
                     etProductCode.text.clear()
                     etQuantity.text.clear()
-                    etCustomer.text.clear()
+                    spinnerCustomer.setSelection(0)
                     etNotes.text.clear()
                     Toast.makeText(this, "Form temizlendi", Toast.LENGTH_SHORT).show()
                 }
