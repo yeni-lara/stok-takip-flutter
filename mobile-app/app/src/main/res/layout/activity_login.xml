@@ -7,23 +7,15 @@
     android:gravity="center"
     android:padding="32dp">
 
-    <!-- Logo ve Başlık -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Kasabi'Et"
-        android:textColor="@color/white"
-        android:textSize="48sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+    <!-- Genel Logo (Yatay) -->
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="80dp"
+        android:src="@drawable/logo_horizontal"
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="24dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Stok Takip Sistemi"
-        android:textColor="@color/light_gray"
-        android:textSize="18sp"
-        android:layout_marginBottom="64dp" />
+
 
     <!-- Login Form -->
     <EditText
@@ -69,13 +61,6 @@
                     android:layout_marginTop="16dp"
                     android:visibility="gone" />
 
-    <!-- Test Bilgileri -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Test: admin / 1234"
-        android:textColor="@color/dark_gray"
-        android:textSize="12sp"
-        android:layout_marginTop="32dp" />
+
 
 </LinearLayout> 
