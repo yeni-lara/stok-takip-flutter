@@ -41,6 +41,13 @@ class StockReturnActivity : AppCompatActivity() {
                 private lateinit var stockBadge: TextView
                 private lateinit var stockInfo: LinearLayout
                 private lateinit var stockText: TextView
+                
+                // Ürün bilgileri (API'ye göndermek için)
+                private var currentProductId: Int = 0
+                private var currentProductStock: Int = 0
+                
+                // Müşteri bilgileri (ID ve isim eşleştirmesi için)
+                private var customerIdMap: MutableMap<String, Int> = mutableMapOf()
 
     companion object {
         private const val QR_SCAN_REQUEST_CODE = 101
@@ -129,24 +136,8 @@ class StockReturnActivity : AppCompatActivity() {
                         return
                     }
 
-                    // Onay dialog'u göster
-                    AlertDialog.Builder(this)
-                        .setTitle("Stok İade Onayı")
-                        .setMessage("""
-                            Ürün Kodu: $productCode
-                            Miktar: $quantity
-                            Müşteri: ${if (customer.isNotEmpty()) customer else "Belirtilmedi"}
-                            Açıklama: ${if (notes.isNotEmpty()) notes else "Belirtilmedi"}
-
-                            Onaylıyor musunuz?
-                        """.trimIndent())
-                        .setPositiveButton("Onayla") { _, _ ->
-                            // TODO: API'ye gönder
-                            Toast.makeText(this, "Stok iade işlemi tamamlandı!", Toast.LENGTH_LONG).show()
-                            finish() // Ana sayfaya dön
-                        }
-                        .setNegativeButton("İptal", null)
-                        .show()
+                    // Profesyonel onay ekranını göster
+                    showProfessionalConfirmationDialog(productCode, quantity, customer, notes)
                 }
     
                     private fun clearForm() {
@@ -237,6 +228,10 @@ class StockReturnActivity : AppCompatActivity() {
                         val currentStock = product.getInt("current_stock")
                         stockBadge.text = "$currentStock"
                         
+                        // Ürün ID ve stok bilgisini sakla (API için)
+                        currentProductId = product.getInt("id")
+                        currentProductStock = currentStock
+                        
                         // Stok uyarısı
                         if (currentStock <= 5) {
                             stockInfo.visibility = View.VISIBLE
@@ -271,6 +266,13 @@ class StockReturnActivity : AppCompatActivity() {
                     productCategory.text = ""
                     productBarcode.text = ""
                     stockBadge.text = ""
+                    
+                    // Ürün ID ve stok bilgisini sıfırla
+                    currentProductId = 0
+                    currentProductStock = 0
+                    
+                    // Müşteri map'ini temizle
+                    customerIdMap.clear()
                     
                     // Elementleri gizle
                     productName.visibility = View.VISIBLE
@@ -351,9 +353,16 @@ class StockReturnActivity : AppCompatActivity() {
                                             val customerNames = mutableListOf<String>()
                                             customerNames.add("Müşteri Seçiniz")
                                             
+                                            // Müşteri ID map'ini temizle
+                                            customerIdMap.clear()
+                                            
                                             for (i in 0 until customersArray.length()) {
                                                 val customer = customersArray.getJSONObject(i)
-                                                customerNames.add(customer.getString("company_name"))
+                                                val customerName = customer.getString("company_name")
+                                                val customerId = customer.getInt("id")
+                                                
+                                                customerNames.add(customerName)
+                                                customerIdMap[customerName] = customerId
                                             }
                                             
                                             setupCustomerSpinnerWithData(customerNames.toTypedArray())
@@ -421,5 +430,160 @@ class StockReturnActivity : AppCompatActivity() {
                     }
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinnerCustomer.adapter = adapter
+                }
+
+                private fun showProfessionalConfirmationDialog(productCode: String, quantity: String, customer: String, notes: String) {
+                    // Dialog layout'unu inflate et
+                    val dialogView = layoutInflater.inflate(R.layout.dialog_stock_confirmation, null)
+                    
+                    // Dialog elementlerini bul
+                    val tvTitle = dialogView.findViewById<TextView>(R.id.tvTitle)
+                    val iconOperation = dialogView.findViewById<ImageView>(R.id.iconOperation)
+                    val confirmProductImage = dialogView.findViewById<ImageView>(R.id.confirmProductImage)
+                    val confirmProductName = dialogView.findViewById<TextView>(R.id.confirmProductName)
+                    val confirmProductCategory = dialogView.findViewById<TextView>(R.id.confirmProductCategory)
+                    val confirmProductBarcode = dialogView.findViewById<TextView>(R.id.confirmProductBarcode)
+                    val confirmStockBadge = dialogView.findViewById<TextView>(R.id.confirmStockBadge)
+                    val confirmQuantity = dialogView.findViewById<TextView>(R.id.confirmQuantity)
+                    val confirmCustomer = dialogView.findViewById<TextView>(R.id.confirmCustomer)
+                    val confirmNotes = dialogView.findViewById<TextView>(R.id.confirmNotes)
+                    val confirmStockWarning = dialogView.findViewById<LinearLayout>(R.id.confirmStockWarning)
+                    val confirmStockWarningText = dialogView.findViewById<TextView>(R.id.confirmStockWarningText)
+                    val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
+                    val btnConfirm = dialogView.findViewById<Button>(R.id.btnConfirm)
+                    
+                    // Başlık ve ikon ayarla
+                    tvTitle.text = "Stok İade Onayı"
+                    iconOperation.setImageResource(R.drawable.ic_launcher_foreground)
+                    
+                    // Ürün bilgilerini doldur
+                    confirmProductName.text = productName.text.toString()
+                    confirmProductCategory.text = productCategory.text.toString()
+                    confirmProductBarcode.text = "Barkod: $productCode"
+                    confirmStockBadge.text = "$currentProductStock"
+                    confirmQuantity.text = quantity
+                    confirmCustomer.text = if (customer.isNotEmpty()) customer else "Belirtilmedi"
+                    confirmNotes.text = if (notes.isNotEmpty()) notes else "Belirtilmedi"
+                    
+                    // Ürün resmini yükle
+                    if (productImage.visibility == View.VISIBLE) {
+                        confirmProductImage.visibility = View.VISIBLE
+                        confirmProductImage.setImageDrawable(productImage.drawable)
+                    } else {
+                        confirmProductImage.visibility = View.GONE
+                    }
+                    
+                    // Stok uyarısı varsa göster
+                    if (stockInfo.visibility == View.VISIBLE) {
+                        confirmStockWarning.visibility = View.VISIBLE
+                        confirmStockWarningText.text = stockText.text.toString()
+                    } else {
+                        confirmStockWarning.visibility = View.GONE
+                    }
+                    
+                    // Dialog oluştur
+                    val dialog = AlertDialog.Builder(this)
+                        .setView(dialogView)
+                        .setCancelable(false)
+                        .create()
+                    
+                    // Buton click listener'ları
+                    btnCancel.setOnClickListener {
+                        dialog.dismiss()
+                    }
+                    
+                    btnConfirm.setOnClickListener {
+                        dialog.dismiss()
+                        // API'ye gönder
+                        submitStockReturn(productCode, quantity, customer, notes)
+                    }
+                    
+                    // Dialog'u göster
+                    dialog.show()
+                }
+
+                private fun submitStockReturn(productCode: String, quantity: String, customer: String, notes: String) {
+                    // Loading göster
+                    btnSubmit.isEnabled = false
+                    btnSubmit.text = "Gönderiliyor..."
+                    
+                    // Müşteri ID'sini bul
+                    val customerId = if (customer != "Müşteri Seçiniz" && customer != "Belirtilmedi") {
+                        // Müşteri adından ID bul
+                        val foundId = findCustomerIdByName(customer)
+                        android.util.Log.d("StockReturn", "Müşteri: $customer, Bulunan ID: $foundId")
+                        foundId
+                    } else {
+                        android.util.Log.d("StockReturn", "Müşteri seçilmedi veya geçersiz")
+                        null
+                    }
+                    
+                    // API request body oluştur
+                    val requestBody = JSONObject().apply {
+                        put("product_id", currentProductId)
+                        put("quantity", quantity.toInt())
+                        if (customerId != null) put("customer_id", customerId)
+                        if (notes.isNotEmpty()) put("note", notes)
+                    }
+                    
+                    // API'ye gönder
+                    val url = Config.API_STOCK_RETURN
+                    val mediaType = "application/json; charset=utf-8".toMediaType()
+                    val body = requestBody.toString().toRequestBody(mediaType)
+                    
+                    val request = Request.Builder()
+                        .url(url)
+                        .post(body)
+                        .addHeader("Content-Type", "application/json")
+                        .build()
+                    
+                    val client = OkHttpClient.Builder()
+                        .connectTimeout(Config.CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                        .readTimeout(Config.READ_TIMEOUT, TimeUnit.SECONDS)
+                        .build()
+                    
+                    client.newCall(request).enqueue(object : Callback {
+                        override fun onFailure(call: Call, e: IOException) {
+                            runOnUiThread {
+                                btnSubmit.isEnabled = true
+                                btnSubmit.text = "Stok İade Yap"
+                                Toast.makeText(this@StockReturnActivity, "Bağlantı hatası: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                        
+                        override fun onResponse(call: Call, response: Response) {
+                            val responseBody = response.body?.string()
+                            
+                            runOnUiThread {
+                                btnSubmit.isEnabled = true
+                                btnSubmit.text = "Stok İade Yap"
+                                
+                                if (response.isSuccessful && responseBody != null) {
+                                    try {
+                                        val jsonObject = JSONObject(responseBody)
+                                        val success = jsonObject.getBoolean("success")
+                                        
+                                        if (success) {
+                                            val message = jsonObject.getString("message")
+                                            Toast.makeText(this@StockReturnActivity, message, Toast.LENGTH_LONG).show()
+                                            finish() // Ana sayfaya dön
+                                        } else {
+                                            val errorMessage = jsonObject.getString("message")
+                                            Toast.makeText(this@StockReturnActivity, errorMessage, Toast.LENGTH_LONG).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(this@StockReturnActivity, "Yanıt işlenirken hata: ${e.message}", Toast.LENGTH_LONG).show()
+                                    }
+                                } else {
+                                    Toast.makeText(this@StockReturnActivity, "Sunucu hatası: ${response.code}", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
+                    })
+                }
+
+                private fun findCustomerIdByName(customerName: String): Int? {
+                    // Müşteri adından ID'yi map'ten bul
+                    return customerIdMap[customerName]
                 }
             } 
