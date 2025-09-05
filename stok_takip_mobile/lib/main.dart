@@ -43,7 +43,7 @@ class StokTakipApp extends StatelessWidget {
         ),
         
         // Card teması
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: AppColors.mediumGray,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
