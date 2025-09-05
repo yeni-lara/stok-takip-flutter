@@ -1,7 +1,7 @@
 workflows:
   ios-workflow:
     name: iOS Workflow
-    max_build_duration: 120
+    max_build_duration: 999120
     instance_type: mac_mini_m1
     working_directory: stok_takip_mobile
     environment:
@@ -12,11 +12,11 @@ workflows:
       - name: Get Flutter packages
         script: |
           flutter packages pub get
-      - name: Build ipa for distribution
+      - name: Build for iOS simulator
         script: |
-          flutter build ipa --release
+          flutter build ios --simulator
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/iphonesimulator/*.app
       - flutter_drive.log
     publishing:
       email:
