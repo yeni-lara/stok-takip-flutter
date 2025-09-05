@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../config/app_colors.dart';
+import '../services/api_service.dart';
+import 'qr_scanner_screen.dart';
 
 class StockExitScreen extends StatefulWidget {
   const StockExitScreen({super.key});
@@ -14,15 +18,22 @@ class _StockExitScreenState extends State<StockExitScreen> {
   final _quantityController = TextEditingController();
   final _notesController = TextEditingController();
   
-  String? selectedCustomer;
+  String? selectedCustomerId;
+  String? selectedCustomerName;
   bool _isLoading = false;
   bool _showProductInfo = false;
   
-  // Müşteri listesi (API'den gelecek)
-  List<String> customers = ['Müşteri seçiniz...', 'Ahmet Yılmaz', 'Mehmet Öz', 'Ayşe Demir'];
+  // API'den gelen müşteri listesi
+  List<Map<String, dynamic>> customers = [];
   
-  // Ürün bilgileri (QR scan sonrası gösterilecek)
-  Map<String, dynamic> productInfo = {};
+  // QR scan sonrası ürün bilgileri
+  Map<String, dynamic>? productInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomers();
+  }
 
   @override
   void dispose() {
@@ -32,14 +43,152 @@ class _StockExitScreenState extends State<StockExitScreen> {
     super.dispose();
   }
 
-  void _scanQRCode() {
-    // QR Scanner açılacak
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('QR Tarayıcı yakında aktif olacak!'),
-        backgroundColor: AppColors.warningOrange,
-      ),
-    );
+  // Müşteri listesini API'den yükle
+  Future<void> _loadCustomers() async {
+    try {
+      final customerList = await ApiService.getCustomers();
+      setState(() {
+        customers = customerList;
+      });
+    } catch (e) {
+      print('❌ Müşteri listesi yüklenemedi: $e');
+    }
+  }
+
+  // Kamera izni kontrol et ve QR tarayıcıyı aç
+  Future<void> _scanQRCode() async {
+    // Kamera izni kontrol et
+    final status = await Permission.camera.request();
+    if (status != PermissionStatus.granted) {
+      _showError('Kamera izni gerekli!');
+      return;
+    }
+
+    try {
+      // QR Scanner'ı aç
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const QRScannerScreen(),
+        ),
+      );
+
+      print('🔍 QR Scanner sonucu: $result');
+
+      if (result != null && result is String && result.isNotEmpty) {
+        // QR kod başarıyla tarandı
+        print('✅ QR kod alındı: $result');
+        await _loadProductInfo(result);
+      } else {
+        print('❌ QR kod alınamadı veya boş');
+      }
+    } catch (e) {
+      print('❌ QR Scanner hatası: $e');
+      _showError('QR tarama sırasında hata oluştu!');
+    }
+  }
+
+  // Ürün bilgilerini API'den yükle
+  Future<void> _loadProductInfo(String barcode) async {
+    if (barcode.isEmpty) {
+      _showError('Geçersiz barkod!');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      print('📡 Ürün bilgileri yükleniyor: $barcode');
+      final product = await ApiService.getProductByBarcode(barcode);
+      
+      if (product != null) {
+        print('✅ Ürün bilgileri yüklendi: ${product['name']}');
+        setState(() {
+          productInfo = product;
+          _productCodeController.text = barcode;
+          _showProductInfo = true;
+          _isLoading = false;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ürün bilgileri yüklendi: ${product['name']}'),
+            backgroundColor: AppColors.successGreen,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        print('❌ Ürün bulunamadı: $barcode');
+        setState(() {
+          _isLoading = false;
+        });
+        _showError('Bu barkod ile ürün bulunamadı!');
+      }
+    } catch (e) {
+      print('❌ Ürün bilgileri yüklenirken hata: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      _showError('Ürün bilgileri yüklenirken hata oluştu: $e');
+    }
+  }
+
+  Future<void> _submitStockExit(String productCode, int quantity, String? customerId, String notes) async {
+    // Android: currentProductId gerekli
+    if (productInfo == null || productInfo!['id'] == null) {
+      _showError('Ürün bilgileri eksik! Lütfen QR kodu tekrar tarayın.');
+      return;
+    }
+
+    final productId = productInfo!['id'] as int;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      print('📡 Stok çıkış işlemi başlatılıyor...');
+      print('📡 Ürün ID: $productId, Miktar: $quantity, Müşteri ID: $customerId');
+      
+      // Android: product_id kullanılıyor
+      final result = await ApiService.stockExit(
+        productId: productId, // Android: product_id
+        quantity: quantity,
+        customerId: customerId != null ? int.tryParse(customerId) : null,
+        notes: notes.isEmpty ? null : notes,
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      print('📡 API Sonucu: $result');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'İşlem tamamlandı'),
+            backgroundColor: result['success'] ? AppColors.successGreen : AppColors.dangerRed,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        
+        if (result['success']) {
+          // Android: Başarılı işlem sonrası ana sayfaya dön
+          Navigator.pop(context);
+        }
+      }
+    } catch (e) {
+      print('❌ Stok çıkış hatası: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        _showError('İşlem sırasında hata oluştu: $e');
+      }
+    }
   }
 
   void _validateAndSubmit() {
@@ -47,7 +196,7 @@ class _StockExitScreenState extends State<StockExitScreen> {
 
     final productCode = _productCodeController.text.trim();
     final quantity = _quantityController.text.trim();
-    final customer = selectedCustomer;
+    final customerId = selectedCustomerId;
     final notes = _notesController.text.trim();
 
     // Android validasyon kuralları
@@ -63,12 +212,27 @@ class _StockExitScreenState extends State<StockExitScreen> {
     }
 
     // Android: Müşteri veya açıklama kontrolü
-    if ((customer == null || customer == 'Müşteri seçiniz...') && notes.isEmpty) {
+    if (customerId == null && notes.isEmpty) {
       _showError('Müşteri veya açıklama gerekli!');
       return;
     }
 
-    _showConfirmationDialog(productCode, quantity, customer, notes);
+    // Stok kontrolü
+    if (productInfo != null) {
+      final currentStock = productInfo!['current_stock'] ?? 0;
+      if (quantityInt > currentStock) {
+        _showError('Yetersiz stok! Mevcut stok: $currentStock adet');
+        return;
+      }
+    }
+
+    // Android: Ürün ID kontrolü
+    if (productInfo == null || productInfo!['id'] == null) {
+      _showError('Ürün bilgileri eksik! Lütfen QR kodu tekrar tarayın.');
+      return;
+    }
+
+    _showConfirmationDialog(productCode, quantityInt, customerId, notes);
   }
 
   void _showError(String message) {
@@ -80,7 +244,7 @@ class _StockExitScreenState extends State<StockExitScreen> {
     );
   }
 
-  void _showConfirmationDialog(String productCode, String quantity, String? customer, String notes) {
+  void _showConfirmationDialog(String productCode, int quantity, String? customerId, String notes) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -94,9 +258,11 @@ class _StockExitScreenState extends State<StockExitScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Ürün Kodu: $productCode', style: const TextStyle(color: AppColors.lightGray)),
+              if (productInfo != null) 
+                Text('Ürün: ${productInfo!['name'] ?? 'Bilinmiyor'}', style: const TextStyle(color: AppColors.lightGray)),
+              Text('Barkod: $productCode', style: const TextStyle(color: AppColors.lightGray)),
               Text('Miktar: $quantity', style: const TextStyle(color: AppColors.lightGray)),
-              Text('Müşteri: ${customer ?? "Belirtilmedi"}', style: const TextStyle(color: AppColors.lightGray)),
+              Text('Müşteri: ${selectedCustomerName ?? "Belirtilmedi"}', style: const TextStyle(color: AppColors.lightGray)),
               if (notes.isNotEmpty) Text('Açıklama: $notes', style: const TextStyle(color: AppColors.lightGray)),
             ],
           ),
@@ -109,7 +275,7 @@ class _StockExitScreenState extends State<StockExitScreen> {
               child: const Text('Onayla', style: TextStyle(color: AppColors.successGreen)),
               onPressed: () {
                 Navigator.of(context).pop();
-                _submitStockExit();
+                _submitStockExit(productCode, quantity, customerId, notes);
               },
             ),
           ],
@@ -118,35 +284,15 @@ class _StockExitScreenState extends State<StockExitScreen> {
     );
   }
 
-  void _submitStockExit() {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // API çağrısı simülasyonu
-    Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Stok çıkış işlemi başarıyla tamamlandı!'),
-          backgroundColor: AppColors.successGreen,
-        ),
-      );
-      
-      _clearForm();
-    });
-  }
-
   void _clearForm() {
     _productCodeController.clear();
     _quantityController.clear();
     _notesController.clear();
     setState(() {
-      selectedCustomer = null;
+      selectedCustomerId = null;
+      selectedCustomerName = null;
       _showProductInfo = false;
+      productInfo = null;
     });
   }
 
@@ -182,7 +328,7 @@ class _StockExitScreenState extends State<StockExitScreen> {
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 24),
                       child: ElevatedButton.icon(
-                        onPressed: _scanQRCode,
+                        onPressed: _isLoading ? null : _scanQRCode,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.successGreen,
                           foregroundColor: AppColors.white,
@@ -204,7 +350,7 @@ class _StockExitScreenState extends State<StockExitScreen> {
                   ),
 
                   // Ürün bilgi kartı (QR scan sonrası gösterilecek)
-                  if (_showProductInfo) ...[
+                  if (_showProductInfo && productInfo != null) ...[
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -213,29 +359,101 @@ class _StockExitScreenState extends State<StockExitScreen> {
                         color: AppColors.mediumGray,
                         borderRadius: BorderRadius.all(Radius.circular(8)),
                       ),
-                      child: const Column(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Ürün Bilgileri',
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                          // Ürün resmi - Android: image_path ile
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: AppColors.darkGray,
                             ),
+                            child: productInfo!['image'] != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CachedNetworkImage(
+                                      imageUrl: productInfo!['image'],
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => const Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.primaryBlue,
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) => const Icon(
+                                        Icons.inventory_2,
+                                        color: AppColors.lightGray,
+                                        size: 32,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.inventory_2,
+                                    color: AppColors.lightGray,
+                                    size: 32,
+                                  ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Ürün Adı: Örnek Ürün',
-                            style: TextStyle(color: AppColors.lightGray),
-                          ),
-                          Text(
-                            'Kategori: Örnek Kategori',
-                            style: TextStyle(color: AppColors.lightGray),
-                          ),
-                          Text(
-                            'Stok: 50 adet',
-                            style: TextStyle(color: AppColors.lightGray),
+                          const SizedBox(width: 16),
+                          // Ürün bilgileri - Android örneklerine göre
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  productInfo!['name'] ?? 'Bilinmeyen Ürün',
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                if (productInfo!['category'] != null)
+                                  Text(
+                                    'Kategori: ${productInfo!['category']}',
+                                    style: const TextStyle(color: AppColors.lightGray, fontSize: 12),
+                                  ),
+                                if (productInfo!['barcode'] != null)
+                                  Text(
+                                    'Barkod: ${productInfo!['barcode']}',
+                                    style: const TextStyle(color: AppColors.lightGray, fontSize: 12),
+                                  ),
+                                const SizedBox(height: 8),
+                                // Android: current_stock ile stok badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    // Android: Düşük stok uyarısı (<=5)
+                                    color: (productInfo!['current_stock'] ?? 0) <= 5 
+                                        ? AppColors.dangerRed 
+                                        : AppColors.successGreen,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    'Stok: ${productInfo!['current_stock'] ?? 0} adet',
+                                    style: const TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                // Android: Düşük stok uyarısı mesajı
+                                if ((productInfo!['current_stock'] ?? 0) <= 5) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Düşük stok uyarısı! Mevcut stok: ${productInfo!['current_stock'] ?? 0}',
+                                    style: const TextStyle(
+                                      color: AppColors.dangerRed,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -313,7 +531,7 @@ class _StockExitScreenState extends State<StockExitScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Android: Müşteri Spinner
+                  // Android: Müşteri Spinner - API'den gelen liste
                   const Text(
                     'Müşteri (Opsiyonel)',
                     style: TextStyle(
@@ -331,24 +549,42 @@ class _StockExitScreenState extends State<StockExitScreen> {
                       borderRadius: BorderRadius.all(Radius.circular(8)),
                     ),
                     child: DropdownButton<String>(
-                      value: selectedCustomer,
+                      value: selectedCustomerId,
                       hint: const Text(
-                        'Müşteri seçiniz...',
+                        'Müşteri Seçiniz',
                         style: TextStyle(color: AppColors.lightGray),
                       ),
                       isExpanded: true,
                       underline: const SizedBox(),
                       dropdownColor: AppColors.mediumGray,
                       style: const TextStyle(color: AppColors.white),
-                      items: customers.map((String customer) {
-                        return DropdownMenuItem<String>(
-                          value: customer,
-                          child: Text(customer),
-                        );
-                      }).toList(),
+                      items: [
+                        // Android: "Müşteri Seçiniz" ilk seçenek
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text('Müşteri Seçiniz'),
+                        ),
+                        // API'den gelen müşteriler - Android: company_name
+                        ...customers.map((customer) {
+                          return DropdownMenuItem<String>(
+                            value: customer['id'].toString(),
+                            child: Text(customer['company_name'] ?? customer['name'] ?? 'Bilinmeyen Müşteri'),
+                          );
+                        }).toList(),
+                      ],
                       onChanged: (String? newValue) {
                         setState(() {
-                          selectedCustomer = newValue;
+                          selectedCustomerId = newValue;
+                          if (newValue != null) {
+                            // Seçilen müşterinin adını bul
+                            final customer = customers.firstWhere(
+                              (c) => c['id'].toString() == newValue,
+                              orElse: () => {'company_name': null, 'name': null},
+                            );
+                            selectedCustomerName = customer['company_name'] ?? customer['name'];
+                          } else {
+                            selectedCustomerName = null;
+                          }
                         });
                       },
                     ),
