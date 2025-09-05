@@ -21,7 +21,7 @@ for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set "d
 set "YY=%dt:~2,2%" & set "YYYY=%dt:~0,4%" & set "MM=%dt:~4,2%" & set "DD=%dt:~6,2%"
 set "HH=%dt:~8,2%" & set "Min=%dt:~10,2%"
 
-set ARCHIVE_NAME=%PROJECT_NAME%-%DD%-%MM%-%YY%-%HH%%Min%.7z
+set ARCHIVE_NAME=%PROJECT_NAME%-%DD%-%MM%-%YY%-%HH%%Min%.zip
 
 echo 📦 Proje: %PROJECT_NAME%
 echo 📅 Tarih: %DD%/%MM%/%YYYY% %HH%:%Min%
@@ -31,7 +31,7 @@ echo.
 echo ⏳ Sıkıştırma başlıyor...
 echo.
 
-"C:\Program Files\7-Zip\7z.exe" a -t7z -mx=1 -mmt=on "%ARCHIVE_NAME%" ^
+"C:\Program Files\7-Zip\7z.exe" a -tzip -mx=1 -mmt=on "%ARCHIVE_NAME%" ^
 app ^
 bootstrap ^
 config ^
@@ -75,7 +75,7 @@ if %errorlevel% equ 0 (
         echo    Dosya: %%~nxA
     )
     echo.
-    echo 💡 Bu dosyayı canlı sunucuya yükleyebilirsiniz.
+    echo 💡 Bu ZIP dosyasını canlı sunucuya yükleyebilirsiniz.
 ) else (
     echo ❌ Sıkıştırma sırasında hata oluştu!
 )
