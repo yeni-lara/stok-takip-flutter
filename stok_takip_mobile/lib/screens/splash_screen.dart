@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../config/app_colors.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
@@ -17,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuthAndNavigate() async {
     // 2 saniye bekle (Android'deki gibi)
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
 
     // Login kontrolü yap
     final isLoggedIn = await AuthService.isUserLoggedIn();
@@ -27,13 +30,13 @@ class _SplashScreenState extends State<SplashScreen> {
         // Giriş yapılmışsa ana sayfaya git
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => MainScreen()),
+          MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else {
         // Giriş yapılmamışsa login sayfasına git
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
     }
@@ -42,49 +45,42 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
+      // Android activity_splash.xml: background="@color/black"
+      backgroundColor: AppColors.black,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        // Android: android:padding="32dp"
+        padding: const EdgeInsets.all(32),
+        child: const Column(
+          // Android: android:gravity="center"
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Logo
-            Container(
+            // Android: Uygulama Logosu (Kare) - 120dp x 120dp
+            SizedBox(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.inventory_2,
-                size: 60,
-                color: Colors.black,
+              child: Image(
+                image: AssetImage('assets/images/app_logo.png'),
+                width: 120,
+                height: 120,
+                // Android: android:scaleType="fitCenter"
+                fit: BoxFit.contain,
               ),
             ),
-            SizedBox(height: 30),
             
-            // Uygulama adı
-            Text(
-              'Kasabi\'Et',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Stok Takip Sistemi',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 50),
+            // Android: android:layout_marginBottom="24dp"
+            SizedBox(height: 24),
             
-            // Loading indicator
-            CircularProgressIndicator(
-              color: Colors.white,
+            // Loading indicator (Android'de yok ama Flutter'da güzel durur)
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: AppColors.white,
+                strokeWidth: 2,
+              ),
             ),
           ],
         ),

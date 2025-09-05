@@ -1,50 +1,69 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
+import 'config/app_colors.dart';
 
 void main() {
-  runApp(StokTakipApp());
+  runApp(const StokTakipApp());
 }
 
 class StokTakipApp extends StatelessWidget {
+  const StokTakipApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Kasabi\'Et Stok Takip',
+      title: 'Kasabi\'Et - Stok Takip',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.grey,
-        primaryColor: Colors.black,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
+        // Ana renk paleti
+        primarySwatch: Colors.blue,
+        primaryColor: AppColors.primaryBlue,
+        
+        // Scaffold arkaplanı
+        scaffoldBackgroundColor: AppColors.black,
+        
+        // AppBar teması
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.black,
+          foregroundColor: AppColors.white,
           elevation: 0,
+          centerTitle: true,
         ),
+        
+        // ElevatedButton teması
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.primaryBlue,
+            foregroundColor: AppColors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
+            elevation: 0,
           ),
         ),
+        
+        // Card teması
         cardTheme: CardTheme(
+          color: AppColors.mediumGray,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
           elevation: 4,
         ),
+        
+        // Input decoration teması
         inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.mediumGray,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.black, width: 2),
-          ),
+          contentPadding: const EdgeInsets.all(16),
+          hintStyle: const TextStyle(color: AppColors.lightGray),
         ),
       ),
-      home: SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }

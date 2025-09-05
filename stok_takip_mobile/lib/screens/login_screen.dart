@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../config/app_colors.dart';
 import 'main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -46,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Başarılı giriş
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MainScreen()),
+        MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     } else {
       print('❌ Login başarısız: ${result['message']}'); // Debug log
@@ -54,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message']),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.dangerRed,
         ),
       );
     }
@@ -63,65 +66,75 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      // Android activity_login.xml: background="@color/black"
+      backgroundColor: AppColors.black,
       appBar: AppBar(
-        title: Text('Kasabi\'Et Stok Takip'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        // Android: title = "Kasabi'Et Stok Takip"
+        title: const Text('Kasabi\'Et Stok Takip'),
+        backgroundColor: AppColors.black,
+        foregroundColor: AppColors.white,
         centerTitle: true,
+        elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(24),
-          child: Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        // Android: android:padding="32dp"
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          // Android: android:gravity="center"
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Android: Genel Logo (Yatay) - 200dp x 80dp
+            const SizedBox(
+              width: 200,
+              height: 80,
+              child: Image(
+                image: AssetImage('assets/images/logo_horizontal.png'),
+                width: 200,
+                height: 80,
+                // Android: android:scaleType="fitCenter"
+                fit: BoxFit.contain,
+              ),
             ),
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Logo
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        Icons.inventory_2,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 24),
+            
+            // Android: android:layout_marginBottom="24dp"
+            const SizedBox(height: 24),
 
-                    // Başlık
-                    Text(
-                      'Giriş Yap',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 32),
-
-                    // Kullanıcı adı
-                    TextFormField(
+            // Login Form
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  // Android: E-posta EditText
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextFormField(
                       controller: _usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'E-posta',
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      style: const TextStyle(
+                        // Android: android:textColor="@color/white"
+                        color: AppColors.white,
+                        fontSize: 16,
                       ),
+                      decoration: const InputDecoration(
+                        // Android: android:hint="E-posta"
+                        hintText: 'E-posta',
+                        hintStyle: TextStyle(
+                          // Android: android:textColorHint="@color/light_gray"
+                          color: AppColors.lightGray,
+                        ),
+                        // Android: android:background="@drawable/edit_text_background"
+                        filled: true,
+                        fillColor: AppColors.mediumGray,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide.none,
+                        ),
+                        // Android: android:padding="16dp"
+                        contentPadding: EdgeInsets.all(16),
+                      ),
+                      // Android: android:inputType="textEmailAddress"
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -130,17 +143,41 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 16),
+                  ),
+                  
+                  // Android: android:layout_marginBottom="16dp"
+                  const SizedBox(height: 16),
 
-                    // Şifre
-                    TextFormField(
+                  // Android: Şifre EditText
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextFormField(
                       controller: _passwordController,
+                      style: const TextStyle(
+                        // Android: android:textColor="@color/white"
+                        color: AppColors.white,
+                        fontSize: 16,
+                      ),
                       decoration: InputDecoration(
-                        labelText: 'Şifre',
-                        prefixIcon: Icon(Icons.lock),
+                        // Android: android:hint="Şifre"
+                        hintText: 'Şifre',
+                        hintStyle: const TextStyle(
+                          // Android: android:textColorHint="@color/light_gray"
+                          color: AppColors.lightGray,
+                        ),
+                        // Android: android:background="@drawable/edit_text_background"
+                        filled: true,
+                        fillColor: AppColors.mediumGray,
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          borderSide: BorderSide.none,
+                        ),
+                        // Android: android:padding="16dp"
+                        contentPadding: const EdgeInsets.all(16),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                            color: AppColors.lightGray,
                           ),
                           onPressed: () {
                             setState(() {
@@ -148,10 +185,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             });
                           },
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                       ),
+                      // Android: android:inputType="textPassword"
                       obscureText: !_passwordVisible,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -160,34 +195,51 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 24),
+                  ),
+                  
+                  // Android: android:layout_marginBottom="32dp"
+                  const SizedBox(height: 32),
 
-                    // Giriş butonu
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                  // Android: Button - 60dp height
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        // Android: android:background="@drawable/button_primary"
+                        backgroundColor: AppColors.primaryBlue,
+                        foregroundColor: AppColors.white,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
                         ),
-                        child: _isLoading
-                            ? CircularProgressIndicator(color: Colors.white)
-                            : Text(
-                                'Giriş Yap',
-                                style: TextStyle(fontSize: 16),
-                              ),
+                        elevation: 0,
                       ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: AppColors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              // Android: android:text="Giriş Yap"
+                              'Giriş Yap',
+                              style: TextStyle(
+                                // Android: android:textSize="18sp"
+                                fontSize: 18,
+                                // Android: android:textStyle="bold"
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

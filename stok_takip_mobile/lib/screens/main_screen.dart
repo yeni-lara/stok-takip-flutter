@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../config/app_colors.dart';
 import 'login_screen.dart';
 import 'stock_exit_screen.dart';
 import 'stock_return_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
-  _MainScreenState createState() => _MainScreenState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
@@ -30,15 +33,22 @@ class _MainScreenState extends State<MainScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Çıkış Yap'),
-          content: Text('Çıkış yapmak istediğinizden emin misiniz?'),
+          backgroundColor: AppColors.mediumGray,
+          title: const Text(
+            'Çıkış Yap',
+            style: TextStyle(color: AppColors.white),
+          ),
+          content: const Text(
+            'Çıkış yapmak istediğinizden emin misiniz?',
+            style: TextStyle(color: AppColors.lightGray),
+          ),
           actions: [
             TextButton(
-              child: Text('İptal'),
+              child: const Text('İptal', style: TextStyle(color: AppColors.lightGray)),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: Text('Çıkış Yap'),
+              child: const Text('Çıkış Yap', style: TextStyle(color: AppColors.dangerRed)),
               onPressed: () async {
                 Navigator.of(context).pop();
                 await _logout();
@@ -54,196 +64,164 @@ class _MainScreenState extends State<MainScreen> {
     await AuthService.logout();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      // Android activity_main.xml: background="@color/black"
+      backgroundColor: AppColors.black,
       appBar: AppBar(
-        title: Text('Dashboard'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        title: const Text('Dashboard'),
+        backgroundColor: AppColors.black,
+        foregroundColor: AppColors.white,
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: _showLogoutDialog,
-          ),
-        ],
+        elevation: 0,
+        automaticallyImplyLeading: false, // Back butonunu kaldır
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hoşgeldin mesajı
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            // Android: Genel Logo (Yatay) - 180dp x 72dp, marginTop="60dp"
+            Container(
+              margin: const EdgeInsets.only(top: 60),
+              width: 180,
+              height: 72,
+              child: const Image(
+                image: AssetImage('assets/images/logo_horizontal.png'),
+                width: 180,
+                height: 72,
+                fit: BoxFit.contain,
               ),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Row(
+            ),
+            
+            // Android: LinearLayout - padding="32dp", spacing="24dp", marginTop="40dp"
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                margin: const EdgeInsets.only(top: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.black,
-                      child: Icon(Icons.person, color: Colors.white),
-                    ),
-                    SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hoşgeldin,',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
+                    // Android: btnStockExit - 120dp height, marginBottom="24dp"
+                    Container(
+                      width: double.infinity,
+                      height: 120,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const StockExitScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          // Android: android:background="@drawable/button_primary"
+                          backgroundColor: AppColors.primaryBlue,
+                          foregroundColor: AppColors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
                           ),
+                          elevation: 0,
                         ),
-                        Text(
-                          userData['name'] ?? 'Kullanıcı',
+                        child: const Text(
+                          // Android: android:text="📦 Stok Çıkış"
+                          '📦 Stok Çıkış',
                           style: TextStyle(
-                            fontSize: 18,
+                            // Android: android:textSize="20sp"
+                            fontSize: 20,
+                            // Android: android:textStyle="bold"
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
+                      ),
+                    ),
+
+                    // Android: btnStockReturn - 120dp height
+                    SizedBox(
+                      width: double.infinity,
+                      height: 120,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const StockReturnScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          // Android: android:background="@drawable/button_secondary"
+                          backgroundColor: AppColors.warningOrange,
+                          foregroundColor: AppColors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          // Android: android:text="🔄 Stok İade"
+                          '🔄 Stok İade',
+                          style: TextStyle(
+                            // Android: android:textSize="20sp"
+                            fontSize: 20,
+                            // Android: android:textStyle="bold"
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 24),
 
-            // Ana işlemler başlığı
-            Text(
-              'Ana İşlemler',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+            // Android: btnLogout - marginBottom="16dp"
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: ElevatedButton(
+                onPressed: _showLogoutDialog,
+                style: ElevatedButton.styleFrom(
+                  // Android: android:background="@drawable/button_danger"
+                  backgroundColor: AppColors.dangerRed,
+                  foregroundColor: AppColors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                  // Android: padding
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  // Android: android:text="🚪 Çıkış Yap"
+                  '🚪 Çıkış Yap',
+                  style: TextStyle(
+                    // Android: android:textSize="16sp"
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
-            SizedBox(height: 16),
 
-            // İşlem butonları
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  // Stok Çıkış
-                  _buildMenuCard(
-                    title: 'Stok Çıkış',
-                    icon: Icons.remove_shopping_cart,
-                    color: Colors.red,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => StockExitScreen(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // Stok İade
-                  _buildMenuCard(
-                    title: 'Stok İade',
-                    icon: Icons.assignment_return,
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => StockReturnScreen(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // QR Tarayıcı
-                  _buildMenuCard(
-                    title: 'QR Tarayıcı',
-                    icon: Icons.qr_code_scanner,
-                    color: Colors.blue,
-                    onTap: () {
-                      // QR Scanner sayfasına git
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('QR Tarayıcı yakında!')),
-                      );
-                    },
-                  ),
-
-                  // Raporlar
-                  _buildMenuCard(
-                    title: 'Raporlar',
-                    icon: Icons.analytics,
-                    color: Colors.green,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Raporlar yakında!')),
-                      );
-                    },
-                  ),
-                ],
+            // Android: tvFooter
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: const Text(
+                'Mobil Uygulama v1.0',
+                style: TextStyle(
+                  color: AppColors.lightGray,
+                  fontSize: 12,
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuCard({
-    required String title,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Icon(
-                  icon,
-                  size: 30,
-                  color: color,
-                ),
-              ),
-              SizedBox(height: 12),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
