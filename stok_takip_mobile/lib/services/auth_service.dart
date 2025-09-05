@@ -7,6 +7,8 @@ class AuthService {
   // 🔐 Login
   static Future<Map<String, dynamic>> login(String username, String password) async {
     try {
+      print('🔑 Login denemesi: $username'); // Debug log
+      
       final response = await http.post(
         Uri.parse(AppConfig.apiLogin),
         headers: {'Content-Type': 'application/json'},
@@ -16,16 +18,23 @@ class AuthService {
         }),
       ).timeout(AppConfig.connectTimeout);
 
+      print('📡 API Response Status: ${response.statusCode}'); // Debug log
+      print('📡 API Response Body: ${response.body}'); // Debug log
+      
       final data = json.decode(response.body);
 
-      if (response.statusCode == 200 && data['success'] == true) {
-        // Token'ı kaydet
-        await _saveAuthData(data['data']);
-        return {'success': true, 'message': 'Giriş başarılı'};
+      // Laravel API formatına göre kontrol et
+      if (response.statusCode == 200 && data.containsKey('token')) {
+        // Token'ı kaydet - Laravel formatında
+        print('✅ Login başarılı, token kaydediliyor...'); // Debug log
+        await _saveAuthData(data);
+        return {'success': true, 'message': data['message'] ?? 'Giriş başarılı'};
       } else {
+        print('❌ Login başarısız: ${data['message']}'); // Debug log
         return {'success': false, 'message': data['message'] ?? 'Giriş başarısız'};
       }
     } catch (e) {
+      print('🚨 Login hatası: $e'); // Debug log
       return {'success': false, 'message': 'Bağlantı hatası: $e'};
     }
   }
@@ -77,10 +86,14 @@ class AuthService {
   // 💾 Auth verilerini kaydet
   static Future<void> _saveAuthData(Map<String, dynamic> data) async {
     final prefs = await SharedPreferences.getInstance();
+    print('💾 Kaydedilen data: $data'); // Debug log
+    
     await prefs.setString(AppConfig.keyAuthToken, data['token']);
     await prefs.setString(AppConfig.keyUserId, data['user']['id'].toString());
     await prefs.setString(AppConfig.keyUserName, data['user']['name']);
     await prefs.setString(AppConfig.keyUserEmail, data['user']['email']);
+    
+    print('💾 Token kaydedildi: ${data['token']}'); // Debug log
   }
 
   // 🗑️ Auth verilerini temizle

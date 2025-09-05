@@ -28,22 +28,28 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
+    print('🚀 Login başlatılıyor...'); // Debug log
+    
     final result = await AuthService.login(
       _usernameController.text.trim(),
       _passwordController.text,
     );
+
+    print('📋 Login sonucu: $result'); // Debug log
 
     setState(() {
       _isLoading = false;
     });
 
     if (result['success']) {
+      print('🎉 Login başarılı, ana sayfaya yönlendiriliyor...'); // Debug log
       // Başarılı giriş
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MainScreen()),
       );
     } else {
+      print('❌ Login başarısız: ${result['message']}'); // Debug log
       // Hata mesajı göster
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
