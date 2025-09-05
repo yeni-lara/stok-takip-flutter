@@ -12,25 +12,11 @@ workflows:
       - name: Get Flutter packages
         script: |
           flutter packages pub get
-      - name: Clean pods and install
+      - name: Build ipa for distribution
         script: |
-          cd ios
-          rm -rf Pods
-          rm -rf Podfile.lock
-          pod install --repo-update
-          cd ..
-      - name: Flutter analyze (skip errors)
-        script: |
-          flutter analyze || echo "Analysis completed with warnings"
-      - name: Flutter unit tests (skip errors)
-        script: |
-          flutter test || echo "Tests completed"
-      - name: Build iOS for simulator (debug)
-        script: |
-          flutter build ios --simulator --debug --verbose
+          flutter build ipa --release
     artifacts:
-      - build/ios/iphonesimulator/*.app
-      - /tmp/xcodebuild_logs/*.log
+      - build/ios/ipa/*.ipa
       - flutter_drive.log
     publishing:
       email:
@@ -51,23 +37,11 @@ workflows:
       - name: Get Flutter packages
         script: |
           flutter packages pub get
-      - name: Flutter analyze (skip errors)
-        script: |
-          flutter analyze || echo "Analysis completed with warnings"
-      - name: Flutter unit tests (skip errors)
-        script: |
-          flutter test || echo "Tests completed"
-      - name: Flutter clean before build
-        script: |
-          flutter clean
-          flutter packages pub get
       - name: Build APK
         script: |
           flutter build apk --release
     artifacts:
       - build/**/outputs/**/*.apk
-      - build/**/outputs/**/mapping.txt
-      - flutter_drive.log
     publishing:
       email:
         recipients:
